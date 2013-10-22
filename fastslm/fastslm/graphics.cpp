@@ -81,9 +81,9 @@ void DrawTexture(const GLuint id, const int width, const int height) {
 	glTexCoordPointer(2, GL_FLOAT, 0, texture_coordinates);
 
 	const GLfloat vertices[] = {0, height,
-                            0, 0,
-                            width, height,
-                            width, 0};
+								0, 0,
+								width, height,
+								width, 0};
 	glVertexPointer(2, GL_FLOAT, 0, vertices);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -105,11 +105,12 @@ void DisplayMask(const Pixel* buffer, int M, int N) {
 	glClear(GL_COLOR_BUFFER_BIT);
 	GLuint id = MakeTexture(buffer);
 	DrawTexture(id, M, N);
-	// or glDrawPixels(512, 512, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+	// alternatively...
+	//glDrawPixels(M, N, GL_RGB, GL_UNSIGNED_BYTE, buffer);
 }
 
 // makes a debug phasemask from 0...2pi
-array MakeDebugPhasemask() {
+array DebugMakePhasemask() {
 	array range = linspace(0, (float) 2*af::Pi, 512);
 	array temp = constant(1, 512, 512);
 	for (int i = 0; i < 512; ++i) {

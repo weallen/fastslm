@@ -27,14 +27,14 @@ NetworkHandler::~NetworkHandler() {
 }
 
 int NetworkHandler::ReceiveData() {
-	char temp[200];
+	char temp[BUFSIZE];
 	std::string buff;
 	//int nbytes = zmq_recv(subscriber_, recv_buffer, BUFSIZE, 0);
-	int nbytes = zmq_recv(subscriber_, temp, 200, 0);
+	int nbytes = zmq_recv(subscriber_, temp, BUFSIZE, 0);
 	if (nbytes == -1) {
 		//printf("Timed out...\n");
 	} else {
-		printf("Received %d bytes\n", nbytes);
+		//printf("Received %d bytes\n", nbytes);
 		buff.assign(temp, nbytes+1);
 		buff[nbytes] = '\0';
 		queue_.push(buff);

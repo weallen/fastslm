@@ -41,23 +41,6 @@ int main(int argc, char** argv) {
 		int N = 512;
 		int Z = 10;
 
-		// Initialize OpenGL display
-		GLFWwindow* window;
-		if (!glfwInit()) {
-			return 0;
-		}
-
-		window = glfwCreateWindow(M, N, "Display", NULL, NULL);
-
-		if (!window) {
-			glfwTerminate();
-			std::cout << "Couldn't initialize display." << std::endl;
-			return 0;
-		}
-		
-		glfwMakeContextCurrent(window);
-		InitGraphics();
-
 		//TargetDatabase td(M, N, Z); // object to store set of cell positions
 
 		// load some test targets
@@ -81,23 +64,37 @@ int main(int argc, char** argv) {
 		std::cout << "Initializing controller..." << std::endl;
 		controller.Initialize(lut, queue);
 
+		// Initialize OpenGL display
+		std::cout << "Initializing graphics..." << std::endl;
+		GLFWwindow* window;
+		if (!glfwInit()) {
+			return 0;
+		}
+
+		window = glfwCreateWindow(M, N, "Display", NULL, NULL);
+
+		if (!window) {
+			glfwTerminate();
+			std::cout << "Couldn't initialize display." << std::endl;
+			return 0;
+		}
+
+		glfwMakeContextCurrent(window);
+		InitGraphics();
+
+		// debug stuff
+		//controller.DebugInitCells();
+
 		// initialize asych IO
 		nh.Connect("127.0.0.1", 9091);
 		nh.StartListen();
 
 		timer::start();
-		std::vector<int> target_idx;
 
 		// Main loop
 		int frame = 0;
-		while (!glfwWindowShouldClose(window)) {
+		while (!glfwWindowShouldClose(window)) {		
 
-			// Run GS and show results
-			//array target = td.GenerateTargetImage(target_idx, M, N, 10);
-
-			//h.GS(target, source, target_z, retrieved_phase);
-			//ProcessLUT(retrieved_phase, lut, buffer);
-			
 			controller.Update();
 			buffer = controller.CurrentMask();
 
@@ -106,7 +103,6 @@ int main(int argc, char** argv) {
 			glfwSwapBuffers(window);
 			glfwPollEvents();
 			++frame;
-			target_idx.clear();
 		}
 
 		delete[] lut;

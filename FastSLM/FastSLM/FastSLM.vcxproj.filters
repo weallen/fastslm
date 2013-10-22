@@ -18,60 +18,60 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\common.h">
+    <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\control.h">
+    <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\graphics.h">
+    <ClInclude Include="common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\gs.h">
+    <ClInclude Include="control.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\network.h">
+    <ClInclude Include="graphics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\stdafx.h">
+    <ClInclude Include="gs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\target.h">
+    <ClInclude Include="network.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\targetver.h">
+    <ClInclude Include="target.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\waveoptics.h">
+    <ClInclude Include="waveoptics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\common.cpp">
+    <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\control.cpp">
+    <ClCompile Include="fastslm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\fastslm.cpp">
+    <ClCompile Include="common.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\graphics.cpp">
+    <ClCompile Include="control.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\gs.cpp">
+    <ClCompile Include="graphics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\network.cpp">
+    <ClCompile Include="gs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\stdafx.cpp">
+    <ClCompile Include="network.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\target.cpp">
+    <ClCompile Include="target.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\waveoptics.cpp">
+    <ClCompile Include="waveoptics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

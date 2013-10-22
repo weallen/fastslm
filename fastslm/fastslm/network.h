@@ -1,7 +1,11 @@
 #ifndef NETWORK_H_
 #define NETWORK_H_
 
-#define BUFSIZE 1024
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
+#define BUFSIZE 65536
 
 #include "stdafx.h"
 

@@ -2,8 +2,10 @@
 
 af::array TargetDatabase::GenerateTargetImage(const std::vector<int>& curr_targets) {
 	af::array target_image = af::constant(0, M_, N_, Z_);
+	int idx;
 	for (int i = 0; i < curr_targets.size(); ++i) {
-			target_image(floor(targets_[i].x * M_), floor(targets_[i].y * N_), floor(targets_[i].z)) = 255;//std::numeric_limits<float>::max();
+		idx = curr_targets[i];
+		target_image(floor(targets_[idx].x * M_), floor(targets_[idx].y * N_), floor(targets_[idx].z)) = 255;//std::numeric_limits<float>::max();
 	}
 
 	return target_image;
@@ -26,4 +28,8 @@ af::array makeRandArray() {
 			}
 		}
 		return target;
+}
+
+void TargetDatabase::ApplyCalibration() {
+
 }

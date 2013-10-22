@@ -40,6 +40,6 @@ void InitGraphics();
 void DisplayMask(const Pixel* buffer, int M, int N);
 
 // Util functions
-array MakeDebugPhasemask();
+array DebugMakePhasemask();
 
 #endif	

@@ -1,5 +1,12 @@
 #include "gs.h"
 
+//th = -1*dtheta/180*pi;
+//R = [cos(th) - 1 * sin(th); sin(th) cos(th)];
+//p1res = (p1-N/2)*s+N/2;
+//p1r=N/2+(R*(p1res-N/2)')'
+//c = mean(p2) - mean(p1r);
+//p1t = p1r + repmat(c, [3 1])
+
 // fx = source (f(x))
 // Fu = target (Fourier transform of f(x))
 void Hologram::GS(const array& Fu, const array& fx, const array& z_planes, array& retrieved_phase /*, array& estimate*/) {
@@ -72,8 +79,13 @@ array Hologram::ForwardLensPropagation(const array& incidentField, const float z
 }
 
 array Hologram::PropTF(const array& u1, const int z) {
+#ifdef USE_SHIFT
 	array U1 = fft2(fftshift(u1));
 	return ifftshift(ifft2(H_(span, span, z) * U1));
+#else
+	array U1 = fft2(u1);
+	return ifft2(H_(span, span, z) * U1);
+#endif
 }
 
 array Hologram::BackwardLensPropagation(const array& incidentField, const float z) {
@@ -103,4 +115,20 @@ void Hologram::MakeH() {
 	for (int z = 0; z < Z_; ++z) {
 		H_(span, span, z) = (exp( af::i * complex(- af::Pi * z * (pow2(FX) + pow2(FY)))));
 	}
+}
+
+void Hologram::MakeShiftMatrix() {
+	array fx = seq(0, M_-1);
+	int n = fx.elements();
+	shiftX_ = tile(fx, 1, n);
+	shiftY_ = tile(fx.T(), n, 1);
+}
+
+void Hologram::ApplyShift(const int offsetX, const int offsetY, const array& phasemask, array& shifted_phasemask) {
+	//if (offsetX == 0 && offsetY == 0) {
+	//	shifted_phasemask = phasemask.copy();
+	//}
+	//else {
+		shifted_phasemask = af::mod(phasemask + (shiftX_ * offsetX + shiftY_ * offsetY), af::Pi);
+	//}
 }

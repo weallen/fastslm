@@ -37,6 +37,7 @@ public:
 	int GetNumTargets() { return targets_.size(); }
 	void ResetTargets() { targets_.clear(); }
 
+	void ApplyCalibration();
 	af::array GenerateTargetImage(const std::vector<int>& curr_targets);
 
 private:

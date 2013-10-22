@@ -19,7 +19,9 @@ public:
 		, M_(512)
 		, N_(512)
 		, Z_(10)
-	{ MakeH(); }
+	{
+		Initialize();
+	}
 
 	Hologram(int M, int N, int Z) 
 		: wavelength_(1064)
@@ -28,14 +30,24 @@ public:
 		, M_(M)
 		, N_(N)
 		, Z_(Z)
-	{ MakeH(); }
+	{
+		Initialize();
+	}
 
 	virtual ~Hologram() {}
 
 	// implements the Gerchberg-Saxton algorithm
 	void GS(const array& target, const array& source, const array& target_z, array& retrieved_phase /*, array& estimate*/);
 
+	// apply shift to phasemask
+	void ApplyShift(const int offsetX, const int offsetY, const array& phasemask, array& shifted_phasemask);
+
 private:
+	void Initialize() {
+		MakeH();
+		MakeShiftMatrix();
+	}
+
 	array ForwardLensPropagation(const array& incidentField, const float z);
 	array BackwardLensPropagation(const array& incidentField, const float z);
 
@@ -43,8 +55,11 @@ private:
 
 	// precompute matrix for PropTF
 	void MakeH();
+	void MakeShiftMatrix();
 
 	array H_;
+	array shiftX_;
+	array shiftY_;
 
 	int M_;
 	int N_;

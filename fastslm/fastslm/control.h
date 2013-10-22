@@ -37,9 +37,14 @@ void WarmUp(int* lut);
 class SLMControl {
 public:
 	SLMControl() 
-		: M_(512), N_(512), Z_(10), Zres_(1), offsetX_(0), offsetY_(0), current_mask_(NULL), compute_gs_(false) {}
+		: M_(512), N_(512), Z_(10), Zres_(1)
+		, offsetX_(0), offsetY_(0), current_mask_(NULL)
+		, compute_gs_(false), cells_loaded_(false), apply_shift_(false) {}
+
 	SLMControl(int M, int N, int Z, double Zres) 
-		: M_(M), N_(N), Z_(Z), Zres_(Zres), offsetX_(0), offsetY_(0), current_mask_(NULL), compute_gs_(false) {}
+		: M_(M), N_(N), Z_(Z), Zres_(Zres)
+		, offsetX_(0), offsetY_(0), current_mask_(NULL)
+		, compute_gs_(false), cells_loaded_(false), apply_shift_(false) {}
 
 	virtual ~SLMControl() { if (current_mask_ != NULL) delete[] current_mask_; }
 
@@ -103,6 +108,7 @@ private:
 	TargetDatabase td_; // structure containing cell positions
 	array retrieved_phase_;
 	array target_z_;
+	array shifted_phase_;
 
 	// variables set externally
 	int* lut_;
@@ -110,7 +116,11 @@ private:
 
 	// map to allow switch of different commands
 	std::map<std::string, SLMCommand> cmds_;
+
+	// state flags
 	bool compute_gs_;
+	bool cells_loaded_; 
+	bool apply_shift_;
 };
 
 #endif
