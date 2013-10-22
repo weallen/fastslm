@@ -1,0 +1,129 @@
+// fastslm.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+
+#include <vector>
+#include <stdio.h>
+#include <thread>
+
+#include <arrayfire.h>
+
+#include <glfw3.h>
+#include <gl/GLU.h>
+
+#include "gs.h"
+#include "graphics.h"
+#include "waveoptics.h"
+#include "target.h"
+#include "network.h"
+#include "control.h"
+
+using namespace af;
+
+const int SLM_res = 512;
+const int sim_res_fact = 1;
+
+Hologram h;
+
+int main(int argc, char** argv) {
+	
+	try {
+		af::deviceset(0);
+		af::info();
+		
+		NetworkHandler nh; // object to receive inputs asynchronously over ZMQ
+		SLMControl controller; // object to read 
+		Pixel* buffer;
+
+		// Image dimensions (Fixed for now)
+		int M = 512;
+		int N = 512;
+		int Z = 10;
+
+		// Initialize OpenGL display
+		GLFWwindow* window;
+		if (!glfwInit()) {
+			return 0;
+		}
+
+		window = glfwCreateWindow(M, N, "Display", NULL, NULL);
+
+		if (!window) {
+			glfwTerminate();
+			std::cout << "Couldn't initialize display." << std::endl;
+			return 0;
+		}
+		
+		glfwMakeContextCurrent(window);
+		InitGraphics();
+
+		//TargetDatabase td(M, N, Z); // object to store set of cell positions
+
+		// load some test targets
+		//for (int i = 0; i < 1000; ++i) {
+		//	float x = (rand() % 512)/512.0;
+		//	float y = (rand() % 512)/512.0;
+		//	float z = (rand() % 10);
+		//	td.AddTarget(Position(x,y,z));
+		//}
+		
+		// Load lookup table and make buffer for image
+		std::string lutpath = std::string("C:\\Users\\Admin\\Desktop\\slmscope\\SLM\\SLM2047.lut");
+		std::cout << "Loading LUT from " << lutpath << "..." << std::endl;
+		int* lut = LoadLUT(lutpath);
+
+		// warm up arrayfire
+		WarmUp(lut);
+		
+		// Initialize controller
+		concurrency::concurrent_queue<std::string>* queue = nh.GetQueue();
+		std::cout << "Initializing controller..." << std::endl;
+		controller.Initialize(lut, queue);
+
+		// initialize asych IO
+		nh.Connect("127.0.0.1", 9091);
+		nh.StartListen();
+
+		timer::start();
+		std::vector<int> target_idx;
+
+		// Main loop
+		int frame = 0;
+		while (!glfwWindowShouldClose(window)) {
+
+			// Run GS and show results
+			//array target = td.GenerateTargetImage(target_idx, M, N, 10);
+
+			//h.GS(target, source, target_z, retrieved_phase);
+			//ProcessLUT(retrieved_phase, lut, buffer);
+			
+			controller.Update();
+			buffer = controller.CurrentMask();
+
+			DisplayMask(buffer, M, N);
+
+			glfwSwapBuffers(window);
+			glfwPollEvents();
+			++frame;
+			target_idx.clear();
+		}
+
+		delete[] lut;
+
+		double elapsed = timer::stop();
+		printf("Ran at %g (Hz)\n", 1/(elapsed/frame));
+
+		printf("hit [enter]...");
+		getchar();
+
+		nh.StopListen();
+
+	} catch (af::exception& e) {
+		fprintf(stderr, "%s\n", e.what());
+		throw;
+	}
+
+	glfwTerminate();
+	return 0;
+}
