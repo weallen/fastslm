@@ -22,3 +22,12 @@ array linspace(float d1, float d2, int n) {
 	y(end) = d2;
 	return y;
 }
+
+void Tokenize(const std::string& currstr, std::vector<std::string>& tokens) {
+	std::string buf;
+	std::stringstream ss(currstr);
+	tokens.clear();
+	while (ss >> buf) {
+		tokens.push_back(buf);
+	}
+}

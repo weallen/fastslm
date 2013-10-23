@@ -48,7 +48,7 @@ public:
 
 	virtual ~SLMControl() { if (current_mask_ != NULL) delete[] current_mask_; }
 
-	void Initialize(int* lut, concurrency::concurrent_queue<std::string>* q);
+	void Initialize(int* lut, concurrency::concurrent_queue<std::string>* q, Calibration calib);
 
 	void Update();
 
@@ -84,18 +84,18 @@ private:
 	// Command: STIM N CELL1 CELL2 CELL3 ... CELLN
 	void ChangeStim(const std::vector<std::string>& toks);
 
-	// Command: RESET WIDTH HEIGHT DEPTH ZRES
+	// Command: RESET WIDTH HEIGHT DEPTH ZRES ZMIN ZMAX
 	void Reset(const std::vector<std::string>& toks);
 
-	// split string by whitespace and add to vector
-	void Tokenize(const std::string& str, std::vector<std::string>& tokens);
 
 
 private:
 	int M_; // width
 	int N_; // height
 	int Z_; // depth
-	int Zres_; // Z resolution
+	float Zres_; // Z resolution
+	float minZ_;
+	float maxZ_;
 
 	// offsets from movement
 	int offsetX_;

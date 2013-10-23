@@ -10,26 +10,24 @@
 
 using namespace af;
 
+/*
+ * NOTE: To specify Z-planes, give GS the number of Z planes, min Z, max Z (integers), and Z spacing (float)
+ * It will precompute the H wave-propagation matrix, where each slice of the matrix corresponds to one position in Z.
+ * Cells will each have an integer index into that matrix specifying their position in space.
+ */
 class Hologram {
 public:
+	// default has 10 um spacing
 	Hologram() 
-		: wavelength_(1064)
-		, L_(10.0)
-		, num_iter_(1)
-		, M_(512)
-		, N_(512)
-		, Z_(10)
+		: wavelength_(1064), L_(10.0), num_iter_(1), zres_(0.00001) 
+		, minZ_(0), maxZ_(9), M_(512), N_(512), Z_(10)
 	{
 		Initialize();
 	}
 
-	Hologram(int M, int N, int Z) 
-		: wavelength_(1064)
-		, L_(10.0)
-		, num_iter_(1)
-		, M_(M)
-		, N_(N)
-		, Z_(Z)
+	Hologram(int M, int N, int Z, float minZ, float maxZ, float zres) 
+		: wavelength_(1064), L_(10.0), num_iter_(1), zres_(zres)
+		, minZ_(minZ), maxZ_(maxZ), M_(M), N_(N), Z_(Z)
 	{
 		Initialize();
 	}
@@ -37,7 +35,7 @@ public:
 	virtual ~Hologram() {}
 
 	// implements the Gerchberg-Saxton algorithm
-	void GS(const array& target, const array& source, const array& target_z, array& retrieved_phase /*, array& estimate*/);
+	void GS(const array& target, const array& source, array& retrieved_phase /*, array& estimate*/);
 
 	// apply shift to phasemask
 	void ApplyShift(const int offsetX, const int offsetY, const array& phasemask, array& shifted_phasemask);
@@ -60,6 +58,10 @@ private:
 	array H_;
 	array shiftX_;
 	array shiftY_;
+
+	float zres_;
+	float minZ_;
+	float maxZ_;
 
 	int M_;
 	int N_;

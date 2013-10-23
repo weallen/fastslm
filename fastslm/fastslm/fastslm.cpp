@@ -24,7 +24,6 @@ using namespace af;
 const int SLM_res = 512;
 const int sim_res_fact = 1;
 
-Hologram h;
 
 int main(int argc, char** argv) {
 	
@@ -56,13 +55,17 @@ int main(int argc, char** argv) {
 		std::cout << "Loading LUT from " << lutpath << "..." << std::endl;
 		int* lut = LoadLUT(lutpath);
 
+		std::string calibpath = std::string("C:\\Users\\Admin\\Desktop\\slmscope\\SLM\\calib.txt");
+		Calibration calib;
+		//calib = TargetDatabase::LoadCalibration(calibpath);
+
 		// warm up arrayfire
 		WarmUp(lut);
 		
 		// Initialize controller
 		concurrency::concurrent_queue<std::string>* queue = nh.GetQueue();
 		std::cout << "Initializing controller..." << std::endl;
-		controller.Initialize(lut, queue);
+		controller.Initialize(lut, queue, calib);
 
 		// Initialize OpenGL display
 		std::cout << "Initializing graphics..." << std::endl;

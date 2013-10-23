@@ -10,7 +10,6 @@
 #include <arrayfire.h>
 
 #include <gl/GL.h>
-
 #include "common.h"
 
 const int LUT_SIZE = 65536;

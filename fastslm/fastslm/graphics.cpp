@@ -25,7 +25,7 @@ void ProcessLUT(const array& phase_mask, const int* lut, Pixel* output) {
 	for (int i = 0; i < M; ++i) {
 		for (int j = 0; j < N; ++j) {
 			int a = (int)bits[i*N + j];
-			uint16_t x = lut[a];
+			uint16_t x = (uint16_t) lut[a];
 			//uint16_t x = (uint16_t)a;
 			output[(i*N+j)].g = (uint8_t)(x >> 8); // set red pixel
 			output[(i*N+j)].r = (uint8_t)(x & 0x00ff); // set green pixel
