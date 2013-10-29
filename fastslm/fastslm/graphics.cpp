@@ -34,6 +34,7 @@ void ProcessLUT(const array& phase_mask, const int* lut, Pixel* output) {
 	array::free(bits);
 }
 
+
 int* LoadLUT(const std::string& fname) {
 	// assumes there are 2**16 (65536)
 	std::ifstream fin;
@@ -56,21 +57,18 @@ int* LoadLUT(const std::string& fname) {
 	return lut;
 }
 
-GLuint MakeTexture(const Pixel* pixmap) {
-	GLuint id;
-	glGenTextures(1, &id);
-	glBindTexture(GL_TEXTURE_2D, id);
+void SLMDisplay::MakeTexture(int M, int N) {
+	glGenTextures(1, &id_);
+	glBindTexture(GL_TEXTURE_2D, id_);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 512,
-                 512, 0, GL_RGB, GL_UNSIGNED_BYTE,
-                 pixmap);
-    return id;
-
+	blank_ = MakeRGBImage(M, N);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, M, N, 0, GL_RGB, GL_UNSIGNED_BYTE, blank_);
 }
 
-void DrawTexture(const GLuint id, const int width, const int height) {
-	glBindTexture(GL_TEXTURE_2D, id);
+void SLMDisplay::DrawTexture(const int width, const int height) {
+	glBindTexture(GL_TEXTURE_2D, id_);
+
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
@@ -92,21 +90,27 @@ void DrawTexture(const GLuint id, const int width, const int height) {
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
-void InitGraphics() {
+void SLMDisplay::InitGraphics(int M, int N) {
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glEnable(GL_TEXTURE_2D);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, 512, 512, 0, -1, 1);
+	glOrtho(0, M, N, 0, -1, 1);
 	glMatrixMode(GL_MODELVIEW);
+	MakeTexture(M, N);
 }
 
-void DisplayMask(const Pixel* buffer, int M, int N) {
+void SLMDisplay::DisplayMask(const Pixel* buffer, int M, int N) {
 	glClear(GL_COLOR_BUFFER_BIT);
-	GLuint id = MakeTexture(buffer);
-	DrawTexture(id, M, N);
+	glBindTexture(GL_TEXTURE_2D, id_);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, M,
+		N, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+
+	//GLuint id = MakeTexture(buffer);
+	DrawTexture(M, N);
 	// alternatively...
 	//glDrawPixels(M, N, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+	
 }
 
 // makes a debug phasemask from 0...2pi

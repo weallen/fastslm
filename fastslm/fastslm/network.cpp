@@ -15,6 +15,7 @@ unsigned int __stdcall ThreadReceiveData(void* arg) {
 NetworkHandler::NetworkHandler() {
 	context_ = zmq_ctx_new();
 	subscriber_ = zmq_socket(context_, ZMQ_SUB);
+	recv_buffer_ = new char[BUFSIZE];
 	running = false;
 }
 
@@ -22,20 +23,21 @@ NetworkHandler::~NetworkHandler() {
 	if (running) {
 		StopListen();
 	}
+	delete[] recv_buffer_;
 	zmq_close(subscriber_);
 	zmq_ctx_destroy(context_);
 }
 
 int NetworkHandler::ReceiveData() {
-	char temp[BUFSIZE];
+	//char temp[BUFSIZE];
 	std::string buff;
 	//int nbytes = zmq_recv(subscriber_, recv_buffer, BUFSIZE, 0);
-	int nbytes = zmq_recv(subscriber_, temp, BUFSIZE, 0);
+	int nbytes = zmq_recv(subscriber_, recv_buffer_, BUFSIZE, 0);
 	if (nbytes == -1) {
 		//printf("Timed out...\n");
 	} else {
 		//printf("Received %d bytes\n", nbytes);
-		buff.assign(temp, nbytes+1);
+		buff.assign(recv_buffer_, nbytes+1);
 		buff[nbytes] = '\0';
 		queue_.push(buff);
 	}

@@ -10,6 +10,8 @@
 #include <arrayfire.h>
 
 #include <gl/GL.h>
+#include <gl/GLU.h>
+
 #include "common.h"
 
 const int LUT_SIZE = 65536;
@@ -32,12 +34,22 @@ Pixel* MakeRGBImage(const int M, const int N);
 void ProcessLUT(const array& phase_mask, const int* lut, Pixel* buffer);
 int* LoadLUT(const std::string& fname);
 
-// OpenGL stuff
-GLuint MakeTexture(const Pixel* pixmap);
-void DrawTexture(const GLuint id, const int width, const int height);
-void InitGraphics();
-void DisplayMask(const Pixel* buffer, int M, int N);
+class SLMDisplay
+{
+public:
+	SLMDisplay() : blank_(NULL) {}
+	virtual ~SLMDisplay() { if (blank_ != NULL) { delete[] blank_; } }
 
+	void InitGraphics(int M, int N);
+	void DisplayMask(const Pixel* buffer, int M, int N);
+
+private:
+	// OpenGL stuff
+	void MakeTexture(int M, int N);
+	void DrawTexture(const int width, const int height);
+	GLuint id_;
+	Pixel* blank_;
+};
 // Util functions
 array DebugMakePhasemask();
 

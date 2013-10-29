@@ -45,7 +45,7 @@ private:
 
 	HANDLE thread_; // windows thread for recieving data
 	concurrency::concurrent_queue<std::string> queue_;
-	char recv_buffer[BUFSIZE];
+	char* recv_buffer_;
 };
 
 #endif

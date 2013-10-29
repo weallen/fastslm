@@ -39,12 +39,14 @@ public:
 	SLMControl() 
 		: M_(512), N_(512), Z_(10), Zres_(1)
 		, offsetX_(0), offsetY_(0), current_mask_(NULL)
-		, compute_gs_(false), cells_loaded_(false), apply_shift_(false) {}
+		, compute_gs_(false), cells_loaded_(false), apply_shift_(false)
+		, z_fudge_factor_(4.0) {}
 
 	SLMControl(int M, int N, int Z, double Zres) 
 		: M_(M), N_(N), Z_(Z), Zres_(Zres)
 		, offsetX_(0), offsetY_(0), current_mask_(NULL)
-		, compute_gs_(false), cells_loaded_(false), apply_shift_(false) {}
+		, compute_gs_(false), cells_loaded_(false), apply_shift_(false)
+		, z_fudge_factor_(4.0) {}
 
 	virtual ~SLMControl() { if (current_mask_ != NULL) delete[] current_mask_; }
 
@@ -76,6 +78,7 @@ private:
 	void Blank(const std::vector<std::string>& toks) {} // NOT IMPLEMENTED YET
 
 	// Command: LOAD N X1 Y1 Z1 X2 Y2 Z2 ... XN YN ZN
+	// REMEMBER THAT XN, YN are in [0...1] and ZN is in [0...Z]
 	void LoadCells(const std::vector<std::string>& toks);
 
 	// Command: SHIFT X Y
@@ -121,6 +124,8 @@ private:
 	bool compute_gs_;
 	bool cells_loaded_; 
 	bool apply_shift_;
+
+	float z_fudge_factor_;
 };
 
 #endif

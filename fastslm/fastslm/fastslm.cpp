@@ -19,6 +19,7 @@
 #include "network.h"
 #include "control.h"
 
+
 using namespace af;
 
 const int SLM_res = 512;
@@ -34,6 +35,7 @@ int main(int argc, char** argv) {
 		NetworkHandler nh; // object to receive inputs asynchronously over ZMQ
 		SLMControl controller; // object to read 
 		Pixel* buffer;
+		SLMDisplay display;
 
 		// Image dimensions (Fixed for now)
 		int M = 512;
@@ -51,8 +53,9 @@ int main(int argc, char** argv) {
 		//}
 		
 		// Load lookup table and make buffer for image
-		std::string lutpath = std::string("C:\\Users\\Admin\\Desktop\\slmscope\\SLM\\SLM2047.lut");
+		std::string lutpath = std::string("C:\\Users\\tardigrade\\SLM\\SLM\\SLM2047.lut");
 		std::cout << "Loading LUT from " << lutpath << "..." << std::endl;
+		// TODO Add error handling
 		int* lut = LoadLUT(lutpath);
 
 		std::string calibpath = std::string("C:\\Users\\Admin\\Desktop\\slmscope\\SLM\\calib.txt");
@@ -83,7 +86,7 @@ int main(int argc, char** argv) {
 		}
 
 		glfwMakeContextCurrent(window);
-		InitGraphics();
+		display.InitGraphics(M, N);
 
 		// debug stuff
 		//controller.DebugInitCells();
@@ -101,7 +104,7 @@ int main(int argc, char** argv) {
 			controller.Update();
 			buffer = controller.CurrentMask();
 
-			DisplayMask(buffer, M, N);
+			display.DisplayMask(buffer, M, N);
 
 			glfwSwapBuffers(window);
 			glfwPollEvents();
@@ -124,5 +127,7 @@ int main(int argc, char** argv) {
 	}
 
 	glfwTerminate();
+
+
 	return 0;
 }

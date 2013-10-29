@@ -49,6 +49,7 @@ void SLMControl::Update() {
 	GetCurrentCommands();
 
 	//DebugGenRandomPattern();
+
 	// Run GS
 	if (compute_gs_) {
 		h_.GS(target_, source_, retrieved_phase_);
@@ -71,7 +72,9 @@ void SLMControl::GetCurrentCommands() {
 	std::vector<std::string> tokens;
 
 	while (cmd_queue_->try_pop(currstr)) {
-		//std::cout << currstr << std::endl;
+#ifdef _DEBUG
+		std::cout << currstr << std::endl;
+#endif
 
 		// tokenize string
 		Tokenize(currstr, tokens);
@@ -104,6 +107,10 @@ void SLMControl::DebugInitCells() {
 	toks.push_back("512");
 	toks.push_back("10");
 	toks.push_back("1");
+	toks.push_back("0.00001");
+	toks.push_back("0");
+	toks.push_back("9");
+
 	Reset(toks);
 	for (int i = 0; i < 1000; ++i) {
 		float x = (rand() % 512)/512.0;
@@ -125,6 +132,7 @@ void SLMControl::DebugGenRandomPattern() {
 }
 
 void SLMControl::LoadCells(const std::vector<std::string>& toks) {
+
 	td_.ResetTargets();
 	float x, y, z;
 	int N = atoi(toks[1].c_str());
@@ -165,11 +173,12 @@ void SLMControl::ChangeStim(const std::vector<std::string>& toks) {
 
 // resets phase mask, target database, and recreates source image
 void SLMControl::Reset(const std::vector<std::string>& toks) {
+	
 	//std::cout << "Resetting..." << std::endl;
 	M_ = atoi(toks[1].c_str());
 	N_ = atoi(toks[2].c_str());
 	Z_ = atoi(toks[3].c_str());
-	Zres_ = atof(toks[4].c_str());
+	Zres_ = atof(toks[4].c_str())/z_fudge_factor_;
 	minZ_ = atof(toks[5].c_str());
 	maxZ_ = atof(toks[6].c_str());
 
