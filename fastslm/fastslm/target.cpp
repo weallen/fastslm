@@ -36,39 +36,44 @@ Calibration TargetDatabase::LoadCalibration(const std::string& fname) {
 //c = mean(p2) - mean(p1r);
 //p1t = p1r + repmat(c, [3 1])
 void TargetDatabase::ApplyCalibration() {
-	Position p, p1;
+	float x, y, z, x_temp;
 
 	float N = (float) M_;
-	float theta = -1 * calib_.dtheta / 180 * 3.14159;
+	float theta = -1 * calib_.dtheta;
 	float R11 = cos(theta);
 	float R12 = -1 * sin(theta);
 	float R21 = sin(theta);
 	float R22 = cos(theta);
 
 	for (int i = 0; i < targets_.size(); ++i) {
-		p1 = targets_[i];
+		
+		x = targets_[i].x;
+		y = targets_[i].y;
+		z = targets_[i].z;
 
 		// scale to [0...N]
-		p1.x *= M_;
-		p1.y *= N_;
+		x *= M_;
+		y *= N_;
 
 		// scale
-		p1.x = (p1.x - N / 2)*calib_.scale + N / 2;
-		p1.y = (p1.y - N / 2)*calib_.scale + N / 2;
+		x = (x - N / 2)*calib_.scale + N / 2;
+		y = (y - N / 2)*calib_.scale + N / 2;
+
+		x_temp = x;
 
 		// rotate
-		p1.x = N / 2 + (R11 * (p1.x - N / 2) + R12 * (p1.y - N / 2));
-		p1.y = N / 2 + (R21 * (p1.y - N / 2) + R22 * (p1.y - N / 2));
+		x = N / 2 + (R11 * (x - N / 2) + R12 * (y - N / 2));
+		y = N / 2 + (R21 * (x_temp - N / 2) + R22 * (y - N / 2));
 
 		// translate
-		p1.x += calib_.shiftX;
-		p1.y += calib_.shiftY;
+		x += calib_.shiftY; // !!! NOTE THAT THESE ARE BACKWARDS
+		y += -1*calib_.shiftX; // !!! NOTE MULTIPLICATION BY -1 TO COMPENSATE FOR IMAGE FLIP
 
 		// scale back to [0..1]
-		p1.x /= M_;
-		p1.y /= N_;
+		x /= M_;
+		y /= N_;
 
-		targets_[i] = p1;
+		targets_[i] = Position(x, y, z);
 	}
 }
 

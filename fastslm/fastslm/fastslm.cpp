@@ -63,9 +63,14 @@ int main(int argc, char** argv) {
 		// TODO Add error handling
 		int* lut = LoadLUT(lutpath);
 
-		std::string calibpath = std::string("C:\\Users\\Admin\\Desktop\\slmscope\\SLM\\calib.txt");
+		std::string calibpath = std::string("C:\\Users\\tardigrade\\Dropbox\\SLM_shared\\2013-10-16\\calib_new.txt");
 		Calibration calib;
-		//calib = TargetDatabase::LoadCalibration(calibpath);
+		calib = TargetDatabase::LoadCalibration(calibpath);
+		
+		// debug calibration
+		//calib.dtheta = 3.14159;
+		//calib.shiftX = 0;
+		//calib.shiftY = 0;
 
 		// warm up arrayfire
 		WarmUp(lut);

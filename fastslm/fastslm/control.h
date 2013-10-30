@@ -125,6 +125,7 @@ private:
 	bool cells_loaded_; 
 	bool apply_shift_;
 
+	Calibration calib_;
 	float z_fudge_factor_;
 };
 

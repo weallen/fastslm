@@ -33,7 +33,8 @@ void SLMControl::Initialize(int* lut, concurrency::concurrent_queue<std::string>
 	retrieved_phase_ = array(M_, N_);
 	shifted_phase_ = array(M_, N_);
 	current_mask_ = MakeRGBImage(M_, N_); // intialize
-	td_.SetCalibration(calib);
+	calib_ = calib;
+	td_.SetCalibration(calib_);
 
 	// set up command mapping
 	cmds_["BLANK"] = BLANK;
@@ -141,7 +142,7 @@ void SLMControl::LoadCells(const std::vector<std::string>& toks) {
 
 	for (int i = 0; i < N*3; i += 3) {
 		x = atof(toks[2+i].c_str());
-		y = atof(toks[2+i+1].c_str());
+		y = 1 - atof(toks[2+i+1].c_str()); // !!!! NOTE THAT THIS is y = 1 - y to compensate for image flip
 		z = atof(toks[2+i+2].c_str());
 		if (x <= 1.0 && y <= 1.0) {
 			td_.AddTarget(Position(x, y, z));
@@ -199,7 +200,8 @@ void SLMControl::Reset(const std::vector<std::string>& toks) {
 	//maxZ_ = 9;
 	h_ = Hologram(M_, N_, Z_, minZ_, maxZ_, Zres_);
 	td_ = TargetDatabase(M_, N_, Z_);
-	
+	td_.SetCalibration(calib_);
+
 	if (current_mask_ != NULL) {
 		delete[] current_mask_;
 	}
