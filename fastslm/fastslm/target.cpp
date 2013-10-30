@@ -5,7 +5,7 @@ af::array TargetDatabase::GenerateTargetImage(const std::vector<int>& curr_targe
 	int idx;
 	for (int i = 0; i < curr_targets.size(); ++i) {
 		idx = curr_targets[i];
-		target_image(floor(targets_[idx].x * M_), floor(targets_[idx].y * N_), floor(targets_[idx].z)) = 255;//std::numeric_limits<float>::max();
+		target_image(floor(targets_[idx].x * (M_-1)), floor(targets_[idx].y * (N_-1)), floor(targets_[idx].z)) = 255;//std::numeric_limits<float>::max();
 	}
 
 	return target_image;

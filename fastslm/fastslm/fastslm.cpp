@@ -25,6 +25,11 @@ using namespace af;
 const int SLM_res = 512;
 const int sim_res_fact = 1;
 
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, GL_TRUE);
+}
+
 
 int main(int argc, char** argv) {
 	
@@ -74,19 +79,43 @@ int main(int argc, char** argv) {
 		std::cout << "Initializing graphics..." << std::endl;
 		GLFWwindow* window;
 		if (!glfwInit()) {
-			return 0;
+			exit(EXIT_FAILURE);
 		}
 
-		window = glfwCreateWindow(M, N, "Display", NULL, NULL);
+		//window = glfwCreateWindow(M, N, "Display", NULL, NULL);
+		// make fullscreen
+		int count;
+		GLFWmonitor** monitors = glfwGetMonitors(&count);
+		int monitor_width = 1024;
+		int monitor_height = 768;
+		
+		/*
+		int widthMM, heightMM;
+		glfwGetMonitorPhysicalSize(monitors[0], &widthMM, &heightMM);
+
+		if (count > 1) {
+			if (widthMM == monitor_width && heightMM == monitor_height) {
+				window = glfwCreateWindow(widthMM, heightMM, "Display", monitors[0], NULL);
+			}
+			else {
+				window = glfwCreateWindow(widthMM, heightMM, "Display", monitors[1], NULL);
+			}
+		} else {
+		}*/
+
+		//window = glfwCreateWindow(monitor_width, monitor_height, "Display", glfwGetPrimaryMonitor(), NULL);
+		window = glfwCreateWindow(monitor_width, monitor_height, "Display", NULL, NULL);
 
 		if (!window) {
 			glfwTerminate();
 			std::cout << "Couldn't initialize display." << std::endl;
-			return 0;
+			exit(EXIT_FAILURE);
 		}
 
 		glfwMakeContextCurrent(window);
-		display.InitGraphics(M, N);
+		glfwSetKeyCallback(window, key_callback);
+
+		display.InitGraphics(M, N, monitor_width, monitor_height);
 
 		// debug stuff
 		//controller.DebugInitCells();

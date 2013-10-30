@@ -66,8 +66,11 @@ void SLMDisplay::MakeTexture(int M, int N) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, M, N, 0, GL_RGB, GL_UNSIGNED_BYTE, blank_);
 }
 
-void SLMDisplay::DrawTexture(const int width, const int height) {
+void SLMDisplay::DrawTexture(const int M, const int N) {
 	glBindTexture(GL_TEXTURE_2D, id_);
+
+	float width = M;
+	float height = N;
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -90,12 +93,12 @@ void SLMDisplay::DrawTexture(const int width, const int height) {
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
-void SLMDisplay::InitGraphics(int M, int N) {
+void SLMDisplay::InitGraphics(int M, int N, int width, int height) {
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glEnable(GL_TEXTURE_2D);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, M, N, 0, -1, 1);
+	glOrtho(0, width, height, 0, 0, 1);
 	glMatrixMode(GL_MODELVIEW);
 	MakeTexture(M, N);
 }
@@ -110,7 +113,6 @@ void SLMDisplay::DisplayMask(const Pixel* buffer, int M, int N) {
 	DrawTexture(M, N);
 	// alternatively...
 	//glDrawPixels(M, N, GL_RGB, GL_UNSIGNED_BYTE, buffer);
-	
 }
 
 // makes a debug phasemask from 0...2pi

@@ -40,7 +40,9 @@ public:
 	SLMDisplay() : blank_(NULL) {}
 	virtual ~SLMDisplay() { if (blank_ != NULL) { delete[] blank_; } }
 
-	void InitGraphics(int M, int N);
+	// M and N are the size of the phasemask
+	// width and height are the size of the screen
+	void InitGraphics(int M, int N, int width, int height);
 	void DisplayMask(const Pixel* buffer, int M, int N);
 
 private:

@@ -123,7 +123,7 @@ void SLMControl::DebugInitCells() {
 
 void SLMControl::DebugGenRandomPattern() {
 	std::vector<int> target_idx;
-	for (int i = 0; i < 100; ++i) {
+	for (int i = 0; i < 10; ++i) {
 		int idx = rand() % 1000;
 		target_idx.push_back(idx);
 	}
@@ -143,7 +143,12 @@ void SLMControl::LoadCells(const std::vector<std::string>& toks) {
 		x = atof(toks[2+i].c_str());
 		y = atof(toks[2+i+1].c_str());
 		z = atof(toks[2+i+2].c_str());
-		td_.AddTarget(Position(x, y, z));
+		if (x <= 1.0 && y <= 1.0) {
+			td_.AddTarget(Position(x, y, z));
+		}
+		else {
+			std::cout << "ERROR: Cell x, y coordinates must be within [0, 1]" << std::endl;
+		}
 	}
 
 	td_.ApplyCalibration();
@@ -157,12 +162,19 @@ void SLMControl::ApplyShift(const std::vector<std::string>& toks) {
 }
 
 void SLMControl::ChangeStim(const std::vector<std::string>& toks) {
+	int cellid;
+	int numtargets = td_.GetNumTargets();
 	if (cells_loaded_) {
 		int N = atoi(toks[1].c_str());
 		//std::cout << "Changing stim to " << N << " cells..." << std::endl; 
 		std::vector<int> targets;
 		for (int i = 0; i < N; ++i) {
-			targets.push_back(atoi(toks[2 + i].c_str()));
+			cellid = atoi(toks[2 + i].c_str());
+			if (cellid < numtargets) {
+				targets.push_back(cellid);
+			} else {
+				std::cout << "ERROR: Index of cell " << cellid << " greater than number of targets (" << numtargets << ")" << std::endl;
+			}
 		}
 		target_ = td_.GenerateTargetImage(targets);
 		compute_gs_ = true;
