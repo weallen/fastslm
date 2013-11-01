@@ -38,7 +38,7 @@ public:
 	void GS(const array& target, const array& source, array& retrieved_phase /*, array& estimate*/);
 
 	// apply shift to phasemask
-	void ApplyShift(const int offsetX, const int offsetY, const array& phasemask, array& shifted_phasemask);
+	void ApplyShift(const float offsetX, const float offsetY, const array& phasemask, array& shifted_phasemask);
 
 private:
 	void Initialize() {

@@ -56,14 +56,14 @@ void SLMControl::Update() {
 		h_.GS(target_, source_, retrieved_phase_);
 		compute_gs_ = false;
 		apply_shift_ = true;
-		ProcessLUT(retrieved_phase_, lut_, current_mask_);
+		//ProcessLUT(retrieved_phase_, lut_, current_mask_);
 	}
 
 	// apply shift
 	
 	if (apply_shift_) {
-		//h_.ApplyShift(offsetX_, offsetY_, retrieved_phase_, shifted_phase_);
-		//ProcessLUT(shifted_phase_, lut_, current_mask_);
+		h_.ApplyShift((float)offsetX_, (float)offsetY_, retrieved_phase_, shifted_phase_);
+		ProcessLUT(shifted_phase_, lut_, current_mask_);
 		apply_shift_ = false;
 	}
 }

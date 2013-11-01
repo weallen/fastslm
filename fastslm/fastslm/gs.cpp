@@ -99,17 +99,22 @@ void Hologram::MakeH() {
 }
 
 void Hologram::MakeShiftMatrix() {
-	array fx = seq(0, M_-1);
+	//array fx = seq(0, M_-1);
+	array fx = linspace(-1, 1, M_);
+	float c = 2 * 3.14159 * 50 * .81203 / 110.9;
 	int n = fx.elements();
 	shiftX_ = tile(fx, 1, n);
 	shiftY_ = tile(fx.T(), n, 1);
 }
 
-void Hologram::ApplyShift(const int offsetX, const int offsetY, const array& phasemask, array& shifted_phasemask) {
+void Hologram::ApplyShift(const float offsetX, const float offsetY, const array& phasemask, array& shifted_phasemask) {
 	//if (offsetX == 0 && offsetY == 0) {
 	//	shifted_phasemask = phasemask.copy();
 	//}
 	//else {
-		shifted_phasemask = af::mod(phasemask + (shiftX_ * offsetX + shiftY_ * offsetY), af::Pi);
+	float c = 2 * 3.14159 * 50 * .81203 / 110.9; 
+	float modfact = 2 * 3.14159;
+	shifted_phasemask = phasemask + (shiftX_ * offsetX + shiftY_ * offsetY) * c;
+	shifted_phasemask = shifted_phasemask - af::floor(shifted_phasemask / modfact) * modfact; // modulus modfact
 	//}
 }
