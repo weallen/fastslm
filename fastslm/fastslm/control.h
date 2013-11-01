@@ -101,8 +101,8 @@ private:
 	float maxZ_;
 
 	// offsets from movement
-	int offsetX_;
-	int offsetY_;
+	float offsetX_;
+	float offsetY_;
 
 	array source_; // random source mask used to initialize each call to GS
 	array target_; // store a buffer to be used a the target

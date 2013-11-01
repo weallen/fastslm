@@ -2,11 +2,15 @@
 
 af::array TargetDatabase::GenerateTargetImage(const std::vector<int>& curr_targets) {
 	af::array target_image = af::constant(0, M_, N_, Z_);
-	int idx;
-	for (int i = 0; i < curr_targets.size(); ++i) {
-		idx = curr_targets[i];
-		target_image(floor(targets_[idx].x * (M_-1)), floor(targets_[idx].y * (N_-1)), floor(targets_[idx].z)) = 255;//std::numeric_limits<float>::max();
-	}
+	int xpos, ypos, idx;
+
+		for (int i = 0; i < curr_targets.size(); ++i) {
+			idx = curr_targets[i];
+			xpos = std::min<int>(floor(targets_[idx].x * (M_ - 1)), M_ - 1);
+			ypos = std::min<int>(floor(targets_[idx].y * (N_ - 1)), N_ - 1);
+			target_image(xpos, ypos, floor(targets_[idx].z)) = 255;//std::numeric_limits<float>::max();
+		}
+	
 
 	return target_image;
 }
@@ -38,7 +42,7 @@ Calibration TargetDatabase::LoadCalibration(const std::string& fname) {
 void TargetDatabase::ApplyCalibration() {
 	float x, y, z, x_temp;
 
-	float N = (float) M_;
+	float N = (float) M_-1;
 	float theta = -1 * calib_.dtheta;
 	float R11 = cos(theta);
 	float R12 = -1 * sin(theta);
@@ -52,8 +56,8 @@ void TargetDatabase::ApplyCalibration() {
 		z = targets_[i].z;
 
 		// scale to [0...N]
-		x *= M_;
-		y *= N_;
+		x *= M_-1;
+		y *= N_-1;
 
 		// scale
 		x = (x - N / 2)*calib_.scale + N / 2;
@@ -70,8 +74,8 @@ void TargetDatabase::ApplyCalibration() {
 		y += -1*calib_.shiftX; // !!! NOTE MULTIPLICATION BY -1 TO COMPENSATE FOR IMAGE FLIP
 
 		// scale back to [0..1]
-		x /= M_;
-		y /= N_;
+		x /= M_-1;
+		y /= N_-1;
 
 		targets_[i] = Position(x, y, z);
 	}

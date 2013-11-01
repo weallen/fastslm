@@ -62,7 +62,7 @@ void SLMControl::Update() {
 	// apply shift
 	
 	if (apply_shift_) {
-		h_.ApplyShift((float)offsetX_, (float)offsetY_, retrieved_phase_, shifted_phase_);
+		h_.ApplyShift(offsetX_, offsetY_, retrieved_phase_, shifted_phase_);
 		ProcessLUT(shifted_phase_, lut_, current_mask_);
 		apply_shift_ = false;
 	}
@@ -71,34 +71,33 @@ void SLMControl::Update() {
 void SLMControl::GetCurrentCommands() {
 	std::string currstr;
 	std::vector<std::string> tokens;
-
-	while (cmd_queue_->try_pop(currstr)) {
+		while (cmd_queue_->try_pop(currstr)) {
 #ifdef _DEBUG
-		std::cout << currstr << std::endl;
+			std::cout << currstr << std::endl;
 #endif
 
-		// tokenize string
-		Tokenize(currstr, tokens);
+			// tokenize string
+			Tokenize(currstr, tokens);
 
-		// apply command
-		switch(cmds_[tokens[0]]) {
-		case BLANK:
-			Blank(tokens);
-			continue;
-		case SHIFT:
-			ApplyShift(tokens);
-			continue;
-		case STIM:
-			ChangeStim(tokens);
-			continue;
-		case RESET:
-			Reset(tokens);
-			continue;
-		case LOAD:
-			LoadCells(tokens);
-			continue;
+			// apply command
+			switch (cmds_[tokens[0]]) {
+			case BLANK:
+				Blank(tokens);
+				continue;
+			case SHIFT:
+				ApplyShift(tokens);
+				continue;
+			case STIM:
+				ChangeStim(tokens);
+				continue;
+			case RESET:
+				Reset(tokens);
+				continue;
+			case LOAD:
+				LoadCells(tokens);
+				continue;
+			}
 		}
-	}
 }
 
 void SLMControl::DebugInitCells() {
@@ -157,8 +156,23 @@ void SLMControl::LoadCells(const std::vector<std::string>& toks) {
 }
 
 void SLMControl::ApplyShift(const std::vector<std::string>& toks) {
-	offsetX_ = atoi(toks[1].c_str());
-	offsetY_ = atoi(toks[2].c_str());
+	offsetX_ = atof(toks[1].c_str());
+	offsetY_ = atof(toks[2].c_str());
+
+	// apply calibration shift
+	float N = (float)M_-1;
+	float theta = -1 * calib_.dtheta;
+	float R11 = cos(theta);
+	float R12 = -1 * sin(theta);
+	float R21 = sin(theta);
+	float R22 = cos(theta);
+	
+	int x_temp = offsetX_;
+
+	// rotate
+	offsetX_ = R11 * offsetX_  + R12 * offsetY_;
+	offsetY_ = R21 * x_temp + R22 * offsetY_;
+
 	apply_shift_ = true;
 }
 

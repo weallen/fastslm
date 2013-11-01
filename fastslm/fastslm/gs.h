@@ -38,6 +38,9 @@ public:
 	void GS(const array& target, const array& source, array& retrieved_phase /*, array& estimate*/);
 
 	// apply shift to phasemask
+	// NOTE: Increased offsetY moves to the left in real coordinates
+	//		 Increased offsetX moves down in real coordinates
+	//		 THIS IS BACKWARDS AND NEGATIVE FROM WHAT YOU WOULD EXPECT!
 	void ApplyShift(const float offsetX, const float offsetY, const array& phasemask, array& shifted_phasemask);
 
 private:

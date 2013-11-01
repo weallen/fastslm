@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
 		// TODO Add error handling
 		int* lut = LoadLUT(lutpath);
 
-		std::string calibpath = std::string("C:\\Users\\tardigrade\\Dropbox\\SLM_shared\\2013-10-16\\calib_new.txt");
+		std::string calibpath = std::string("C:\\Users\\tardigrade\\SLM\\SLM\\cal.txt");
 		Calibration calib;
 		calib = TargetDatabase::LoadCalibration(calibpath);
 		

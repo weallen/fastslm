@@ -107,14 +107,17 @@ void Hologram::MakeShiftMatrix() {
 	shiftY_ = tile(fx.T(), n, 1);
 }
 
+//
+// NOTE: Increased offsetY moves to the left 
+//		 Increased offsetX moves down 
+//		 THIS IS BACKWARDS AND NEGATIVE FROM WHAT YOU WOULD EXPECT!
+
 void Hologram::ApplyShift(const float offsetX, const float offsetY, const array& phasemask, array& shifted_phasemask) {
-	//if (offsetX == 0 && offsetY == 0) {
-	//	shifted_phasemask = phasemask.copy();
-	//}
-	//else {
-	float c = 2 * 3.14159 * 50 * .81203 / 110.9; 
+	float c = 2 * 3.14159 * 50 * .81203 / 110.9 / 52.95 * 50 * (100/64);
 	float modfact = 2 * 3.14159;
-	shifted_phasemask = phasemask + (shiftX_ * offsetX + shiftY_ * offsetY) * c;
+	
+	float tempY = offsetY + 6; // !!! constant shift for calibration
+
+	shifted_phasemask = phasemask + (shiftX_ * offsetX + shiftY_ * tempY) * c;
 	shifted_phasemask = shifted_phasemask - af::floor(shifted_phasemask / modfact) * modfact; // modulus modfact
-	//}
 }
