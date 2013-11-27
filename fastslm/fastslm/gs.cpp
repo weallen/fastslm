@@ -70,7 +70,6 @@ array Hologram::PropTF(const array& u1, const int z) {
 #endif
 }
 
-
 void Hologram::MakeH() {
 	float dx = L_/(float)M_;
 	float k = 2*af::Pi/wavelength_;
