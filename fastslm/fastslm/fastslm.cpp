@@ -41,31 +41,40 @@ int main(int argc, char** argv) {
 		SLMControl controller; // object to read 
 		Pixel* buffer;
 		SLMDisplay display;
+		int* lut;
 
 		// Image dimensions (Fixed for now)
 		int M = 512;
 		int N = 512;
 		int Z = 10;
-
-		//TargetDatabase td(M, N, Z); // object to store set of cell positions
-
-		// load some test targets
-		//for (int i = 0; i < 1000; ++i) {
-		//	float x = (rand() % 512)/512.0;
-		//	float y = (rand() % 512)/512.0;
-		//	float z = (rand() % 10);
-		//	td.AddTarget(Position(x,y,z));
-		//}
 		
 		// Load lookup table and make buffer for image
-		std::string lutpath = std::string("C:\\Users\\tardigrade\\SLM\\SLM\\SLM2047.lut");
-		std::cout << "Loading LUT from " << lutpath << "..." << std::endl;
-		// TODO Add error handling
-		int* lut = LoadLUT(lutpath);
+		//std::string lutpath = std::string("C:\\Users\\tardigrade\\SLM\\SLM\\SLM2047.lut");
 
-		std::string calibpath = std::string("C:\\Users\\tardigrade\\SLM\\SLM\\cal.txt");
+		std::string lutpath = std::string("C:\\Users\\Admin\\Desktop\\slmscope\\SLM\\SLM2047.lut");
+
+		std::ifstream lutfile(lutpath);
+		if (lutfile) {
+			std::cout << "Loading LUT from " << lutpath << "..." << std::endl;
+			// TODO Add error handling
+			lut = LoadLUT(lutpath);
+		} else {
+			std::cout << "ERROR: LUT file at " << lutpath << " not found!" << std::endl;
+			exit(-1);
+		}
+
+		//std::string calibpath = std::string("C:\\Users\\tardigrade\\SLM\\SLM\\cal.txt");
+		std::string calibpath = std::string("C:\\Users\\Admin\\Desktop\\slmscope\\SLM\\cal.txt");
+		std::ifstream calibfile(calibpath);
+		
 		Calibration calib;
-		calib = TargetDatabase::LoadCalibration(calibpath);
+		if (calibfile) {
+			std:: cout << "Loading calibration from " << calibpath << "..." << std::endl;
+			calib = TargetDatabase::LoadCalibration(calibpath);
+		} else {
+			std::cout << "ERROR: Calibration file at " << calibpath << " not found!" << std::endl;
+			std::cout << "WARNING: Using no calibration" << std::endl;
+		}
 		
 		// debug calibration
 		//calib.dtheta = 3.14159;
@@ -124,6 +133,7 @@ int main(int argc, char** argv) {
 
 		// debug stuff
 		//controller.DebugInitCells();
+		//controller.DebugSingleCell(0.0f);
 
 		// initialize asych IO
 		nh.Connect("127.0.0.1", 9091);

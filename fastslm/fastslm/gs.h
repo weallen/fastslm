@@ -10,6 +10,13 @@
 
 using namespace af;
 
+const float z_fudge_factor = 4.0;
+
+
+// constant z offset to compensate for improperly aligned optics
+// XXX THIS IS HACK -- SHOULD BE A PARAMETER
+const float const_z_offset_ = 42E-6; 
+
 /*
  * NOTE: To specify Z-planes, give GS the number of Z planes, min Z, max Z (integers), and Z spacing (float)
  * It will precompute the H wave-propagation matrix, where each slice of the matrix corresponds to one position in Z.
@@ -19,7 +26,7 @@ class Hologram {
 public:
 	// default has 10 um spacing
 	Hologram() 
-		: wavelength_(1064), L_(10.0), num_iter_(1), zres_(0.00001) 
+		: wavelength_(1064), L_(10.0), num_iter_(1), zres_(1E-6) 
 		, minZ_(0), maxZ_(9), M_(512), N_(512), Z_(10)
 	{
 		Initialize();
@@ -52,13 +59,17 @@ private:
 	array ForwardLensPropagation(const array& incidentField, const float z);
 	array BackwardLensPropagation(const array& incidentField, const float z);
 
-	array PropTF(const array& u1, const int z);
+	array PropTF(const array& u1, const float z);
+
+	// XXX NOT WORKING RIGHT NOW DO NOT USE
+	array PropTFPrecomputed(const array& u1, const int z);
 
 	// precompute matrix for PropTF
 	void MakeH();
 	void MakeShiftMatrix();
 
 	array H_;
+
 	array shiftX_;
 	array shiftY_;
 

@@ -70,6 +70,7 @@ public:
 	// debugging functions that generates random patterns
 	void DebugInitCells();
 	void DebugGenRandomPattern();
+	void DebugSingleCell(float z); // Single cell at [0.5, 0.5] with specified z
 
 private:
 	// Apply all the commands currently in the queue

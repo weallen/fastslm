@@ -20,7 +20,6 @@
 
 unsigned int __stdcall ThreadReceiveData(void* arg);
 
-
 class NetworkHandler
 {
 public:

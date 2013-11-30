@@ -106,7 +106,6 @@ void SLMControl::DebugInitCells() {
 	toks.push_back("512");
 	toks.push_back("512");
 	toks.push_back("10");
-	toks.push_back("1");
 	toks.push_back("0.00001");
 	toks.push_back("0");
 	toks.push_back("9");
@@ -124,11 +123,31 @@ void SLMControl::DebugInitCells() {
 void SLMControl::DebugGenRandomPattern() {
 	std::vector<int> target_idx;
 	for (int i = 0; i < 10; ++i) {
-		int idx = rand() % 1000;
+		int idx = rand() % 1000; // assumes 1000 random cells
 		target_idx.push_back(idx);
 	}
 	target_ = td_.GenerateTargetImage(target_idx);
 	compute_gs_ = true;
+}
+
+void SLMControl::DebugSingleCell(float z) {
+	std::vector<std::string> toks;
+	toks.push_back("RESET");
+	toks.push_back("512");
+	toks.push_back("512");
+	toks.push_back("5");
+	toks.push_back("0.000001");
+	toks.push_back("0");
+	toks.push_back("4");
+	Reset(toks);
+
+	td_.AddTarget(Position(0.5, 0.5, 0));
+	std::vector<int> target_idx;
+	target_idx.push_back(0);
+	target_ = td_.GenerateTargetImage(target_idx);
+	cells_loaded_ = true;
+	compute_gs_ = true;
+
 }
 
 void SLMControl::LoadCells(const std::vector<std::string>& toks) {
@@ -141,7 +160,7 @@ void SLMControl::LoadCells(const std::vector<std::string>& toks) {
 
 	for (int i = 0; i < N*3; i += 3) {
 		x = atof(toks[2+i].c_str());
-		y = 1 - atof(toks[2+i+1].c_str()); // !!!! NOTE THAT THIS is y = 1 - y to compensate for image flip
+		y = 1.0 - atof(toks[2+i+1].c_str()); // !!!! NOTE THAT THIS is y = 1 - y to compensate for image flip
 		z = atof(toks[2+i+2].c_str());
 		if (x <= 1.0 && y <= 1.0) {
 			td_.AddTarget(Position(x, y, z));
@@ -156,6 +175,11 @@ void SLMControl::LoadCells(const std::vector<std::string>& toks) {
 }
 
 void SLMControl::ApplyShift(const std::vector<std::string>& toks) {
+	if (toks.size() != 3) {
+		std::cout << "ERROR: Invalid shift command" << std::endl;
+		return;
+	}
+
 	offsetX_ = atof(toks[1].c_str());
 	offsetY_ = atof(toks[2].c_str());
 
@@ -201,6 +225,11 @@ void SLMControl::ChangeStim(const std::vector<std::string>& toks) {
 // resets phase mask, target database, and recreates source image
 void SLMControl::Reset(const std::vector<std::string>& toks) {
 	
+	if (toks.size() != 7) {
+		std::cout << "ERROR: Reset string has incorrect number of elements!" << std::endl;
+		return;
+	}
+
 	//std::cout << "Resetting..." << std::endl;
 	M_ = atoi(toks[1].c_str());
 	N_ = atoi(toks[2].c_str());
@@ -209,9 +238,6 @@ void SLMControl::Reset(const std::vector<std::string>& toks) {
 	minZ_ = atof(toks[5].c_str());
 	maxZ_ = atof(toks[6].c_str());
 
-	//Zres_ = 0.00001;
-	//minZ_ = 0;
-	//maxZ_ = 9;
 	h_ = Hologram(M_, N_, Z_, minZ_, maxZ_, Zres_);
 	td_ = TargetDatabase(M_, N_, Z_);
 	td_.SetCalibration(calib_);
