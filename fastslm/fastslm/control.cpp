@@ -162,6 +162,7 @@ void SLMControl::LoadCells(const std::vector<std::string>& toks) {
 		x = atof(toks[2+i].c_str());
 		y = 1.0 - atof(toks[2+i+1].c_str()); // !!!! NOTE THAT THIS is y = 1 - y to compensate for image flip
 		z = atof(toks[2+i+2].c_str());
+		z = 4.1E-5;
 		if (x <= 1.0 && y <= 1.0) {
 			td_.AddTarget(Position(x, y, z));
 		}
@@ -175,29 +176,27 @@ void SLMControl::LoadCells(const std::vector<std::string>& toks) {
 }
 
 void SLMControl::ApplyShift(const std::vector<std::string>& toks) {
-	if (toks.size() != 3) {
-		std::cout << "ERROR: Invalid shift command" << std::endl;
-		return;
+	if (toks.size() == 3) {
+		offsetX_ = atof(toks[1].c_str());
+		offsetY_ = atof(toks[2].c_str());
+
+		// apply calibration shift
+		float N = (float)M_ - 1;
+		float theta = -1 * calib_.dtheta;
+		float R11 = cos(theta);
+		float R12 = -1 * sin(theta);
+		float R21 = sin(theta);
+		float R22 = cos(theta);
+
+		float x_temp = offsetX_;
+
+		// rotate
+		offsetX_ = R11 * offsetX_ + R12 * offsetY_;
+		offsetY_ = R21 * x_temp + R22 * offsetY_;
+
+		apply_shift_ = true;
+
 	}
-
-	offsetX_ = atof(toks[1].c_str());
-	offsetY_ = atof(toks[2].c_str());
-
-	// apply calibration shift
-	float N = (float)M_-1;
-	float theta = -1 * calib_.dtheta;
-	float R11 = cos(theta);
-	float R12 = -1 * sin(theta);
-	float R21 = sin(theta);
-	float R22 = cos(theta);
-	
-	int x_temp = offsetX_;
-
-	// rotate
-	offsetX_ = R11 * offsetX_  + R12 * offsetY_;
-	offsetY_ = R21 * x_temp + R22 * offsetY_;
-
-	apply_shift_ = true;
 }
 
 void SLMControl::ChangeStim(const std::vector<std::string>& toks) {

@@ -5,7 +5,7 @@ unsigned int __stdcall ThreadReceiveData(void* arg) {
 	NetworkHandler* nh = (NetworkHandler*) arg;
 
 	while (nh->running) {
-		Sleep(10);
+		Sleep(1);
 		//printf("Waiting for data...\n");
 		nh->ReceiveData();
 	}
@@ -14,7 +14,7 @@ unsigned int __stdcall ThreadReceiveData(void* arg) {
 
 NetworkHandler::NetworkHandler() {
 	context_ = zmq_ctx_new();
-	subscriber_ = zmq_socket(context_, ZMQ_SUB);
+	//subscriber_ = zmq_socket(context_, ZMQ_SUB);
 	recv_buffer_ = new char[BUFSIZE];
 	running = false;
 }
@@ -24,39 +24,66 @@ NetworkHandler::~NetworkHandler() {
 		StopListen();
 	}
 	delete[] recv_buffer_;
-	zmq_close(subscriber_);
+	for (int i = 0; i < channels_.size(); ++i) {
+		void* chan = channels_[i];
+		zmq_close(chan);
+	}
 	zmq_ctx_destroy(context_);
 }
 
 int NetworkHandler::ReceiveData() {
 	//char temp[BUFSIZE];
 	std::string buff;
-	//int nbytes = zmq_recv(subscriber_, recv_buffer, BUFSIZE, 0);
-	int nbytes = zmq_recv(subscriber_, recv_buffer_, BUFSIZE, 0);
-	if (nbytes == -1) {
-		//printf("Timed out...\n");
-	} else {
-		//printf("Received %d bytes\n", nbytes);
-		buff.assign(recv_buffer_, nbytes+1);
-		buff[nbytes] = '\0';
-		queue_.push(buff);
+
+	zmq_poll(&polls_[0], polls_.size(), -1);
+	for (int i = 0; i < polls_.size(); ++i) {
+		zmq_pollitem_t pollitem = polls_[i];
+		if (pollitem.revents & ZMQ_POLLIN) {
+			int nbytes = zmq_recv(channels_[i], recv_buffer_, BUFSIZE, 0);
+			if (nbytes == -1) {
+				//printf("Timed out...\n");
+			}
+			else {
+				//printf("Received %d bytes\n", nbytes);
+				buff.assign(recv_buffer_, nbytes + 1);
+				buff[nbytes] = '\0';
+				queue_.push(buff);
+			}
+			return nbytes;
+		}
 	}
-	return nbytes;
 }
 
 void NetworkHandler::Connect(const char* ipaddress, int port) {
 	char channel[200];
+	zmq_pollitem_t pollitem;
+
 	sprintf(channel, "tcp://%s:%d", ipaddress, port);
-	printf("Connected to %s...\n", channel);
-	int rc = zmq_connect(subscriber_, channel);
-	zmq_setsockopt(subscriber_, ZMQ_SUBSCRIBE, "", 0);
+	printf("Connecting to %s...\n", channel);
+
+	void* chan = zmq_socket(context_, ZMQ_SUB);
+	int rc = zmq_connect(chan, channel);
+	zmq_setsockopt(chan, ZMQ_SUBSCRIBE, "", 0);
+	channels_.push_back(chan);
+
+	pollitem.socket = chan;
+	pollitem.fd = 0;
+	pollitem.events = ZMQ_POLLIN;
+	pollitem.revents = 0;
+	polls_.push_back(pollitem);
+
 	//int timeout = 3000;
 	//zmq_setsockopt(subscriber_, ZMQ_RCVTIMEO, &timeout, sizeof(int));
 	//assert(rc == 0);
 }
 
 void NetworkHandler::Disconnect() {
-	zmq_close(subscriber_);
+	for (int i = 0; i < channels_.size(); ++i) {
+		void* chan = channels_[i];
+		zmq_close(chan);
+	}
+	channels_.clear();
+	polls_.clear();
 }
 
 void NetworkHandler::StartListen() {
