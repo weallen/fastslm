@@ -6,6 +6,7 @@
 #endif
 
 #define BUFSIZE 65536
+#define MAX_SOCKS 10
 
 #include "stdafx.h"
 
@@ -41,7 +42,9 @@ public:
 
 private:
 	void* context_;
-	void* subscriber_;
+	std::vector<zmq_pollitem_t> polls_;
+	std::vector<void*> channels_;
+	int nsockets_;
 
 	HANDLE thread_; // windows thread for recieving data
 	concurrency::concurrent_queue<std::string> queue_;

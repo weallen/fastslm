@@ -19,14 +19,14 @@ class Hologram {
 public:
 	// default has 10 um spacing
 	Hologram() 
-		: wavelength_(1064), L_(10.0), num_iter_(1), zres_(0.00001) 
+		: wavelength_(1064), L_(10.0), num_iter_(10), zres_(0.00001) 
 		, minZ_(0), maxZ_(9), M_(512), N_(512), Z_(10)
 	{
 		Initialize();
 	}
 
 	Hologram(int M, int N, int Z, float minZ, float maxZ, float zres) 
-		: wavelength_(1064), L_(10.0), num_iter_(1), zres_(zres)
+		: wavelength_(1064), L_(10.0), num_iter_(10), zres_(zres)
 		, minZ_(minZ), maxZ_(maxZ), M_(M), N_(N), Z_(Z)
 	{
 		Initialize();

@@ -68,9 +68,10 @@ int main(int argc, char** argv) {
 		calib = TargetDatabase::LoadCalibration(calibpath);
 		
 		// debug calibration
-		//calib.dtheta = 3.14159;
+		//calib.dtheta = 0;
 		//calib.shiftX = 0;
 		//calib.shiftY = 0;
+		//calib.scale = 1;
 
 		// warm up arrayfire
 		WarmUp(lut);
@@ -127,6 +128,8 @@ int main(int argc, char** argv) {
 
 		// initialize asych IO
 		nh.Connect("127.0.0.1", 9091);
+		nh.Connect("127.0.0.1", 9089);
+
 		nh.StartListen();
 
 		timer::start();
