@@ -102,14 +102,14 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(AF_PATH)\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include;..\..\include;C:\Users\Admin\Downloads\glfw-3.0.3.bin.WIN64\glfw-3.0.3.bin.WIN64\include\GLFW;C:\Users\Admin\Documents\src\libzmq\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(AF_PATH)\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include;..\..\include;C:\Users\Admin\Downloads\glfw-3.0.3.bin.WIN64\glfw-3.0.3.bin.WIN64\include\GLFW;C:\Users\Admin\Documents\src\libzmq\include;C:\Program Files (x86)\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\..\lib64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\lib\x64;$(AF_PATH)\lib64;C:\Users\Admin\Downloads\glfw-3.0.3.bin.WIN64\glfw-3.0.3.bin.WIN64\lib-msvc110;C:\Users\Admin\Documents\src\libzmq\bin\x64;C:\Users\Admin\Documents\src\libzmq\lib\x64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>cuda.lib;cudart.lib;libafcu.lib;opengl32.lib;glfw3.lib;libzmq.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\lib64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\lib\x64;$(AF_PATH)\lib64;C:\Users\Admin\Downloads\glfw-3.0.3.bin.WIN64\glfw-3.0.3.bin.WIN64\lib-msvc110;C:\Users\Admin\Documents\src\libzmq\bin\x64;C:\Users\Admin\Documents\src\libzmq\lib\x64;C:\Program Files %28x86%29\National Instruments\NI-DAQ\DAQmx ANSI C Dev\lib\msvc</AdditionalLibraryDirectories>
+      <AdditionalDependencies>cuda.lib;cudart.lib;libafcu.lib;opengl32.lib;glfw3.lib;libzmq.lib;NIDAQmx.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -162,6 +162,7 @@
     <ClInclude Include="control.h" />
     <ClInclude Include="graphics.h" />
     <ClInclude Include="gs.h" />
+    <ClInclude Include="stimulator.h" />
     <ClInclude Include="network.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="target.h" />
@@ -181,6 +182,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="stimulator.cpp" />
     <ClCompile Include="target.cpp" />
     <ClCompile Include="waveoptics.cpp" />
   </ItemGroup>

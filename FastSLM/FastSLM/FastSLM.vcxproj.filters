@@ -45,6 +45,9 @@
     <ClInclude Include="waveoptics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="stimulator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -72,6 +75,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="waveoptics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stimulator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

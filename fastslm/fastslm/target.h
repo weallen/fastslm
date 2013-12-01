@@ -10,7 +10,6 @@
 #include <cmath>
 
 #include "common.h"
-
 #define _USE_MATH_DEFINES
 #include <cmath>
 

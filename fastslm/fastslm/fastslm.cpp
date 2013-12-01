@@ -133,7 +133,7 @@ int main(int argc, char** argv) {
 
 		// debug stuff
 		//controller.DebugInitCells();
-		//controller.DebugSingleCell(0.0f);
+		controller.DebugSingleCell(0.0f);
 
 		// initialize asych IO
 		nh.Connect("127.0.0.1", 9091);
