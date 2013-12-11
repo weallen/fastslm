@@ -91,7 +91,8 @@ int main(int argc, char** argv) {
 
 		std::string x_galvo_path = std::string("C:\\Users\\tardigrade\\SLM\\x_galvo.txt");
 		std::string y_galvo_path = std::string("C:\\Users\\tardigrade\\SLM\\y_galvo.txt");
-		controller.LoadGalvoWaveforms(x_galvo_path, y_galvo_path, 500);
+		int Nsamples = 321; // this should definitely not be hardcoded
+		controller.LoadGalvoWaveforms(x_galvo_path, y_galvo_path, Nsamples);
 
 		// Initialize OpenGL display
 		std::cout << "[DEBUG] Initializing graphics..." << std::endl;

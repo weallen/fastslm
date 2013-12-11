@@ -41,7 +41,8 @@ void SLMControl::Initialize(int* lut, concurrency::concurrent_queue<std::string>
 	stim_.SetSamplingRate(nidaq_sample_rate);
 	stim_.Init();
 
-	spiral_.SetSamplingRate(nidaq_sample_rate);
+	int spiral_sample_rate = 125000;
+	spiral_.SetSamplingRate(spiral_sample_rate);
 	spiral_.Init();
 
 	// set up command mapping
