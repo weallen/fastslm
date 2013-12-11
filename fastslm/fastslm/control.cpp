@@ -70,6 +70,17 @@ void SLMControl::LoadCenterWaveforms(const std::string& x_path, const std::strin
 	center_.LoadWaveform(x_path.c_str(), y_path.c_str());
 }
 
+void SLMControl::LoadVignettingCorrectionMap(const std::string& path) {
+	std::ifstream vignetting_file(path);
+	if (vignetting_file) {
+		array map = af::loadimage(path.c_str(), false);
+		map = map / af::max(af::max(map));
+		td_.SetVignettingCorrection(map);
+	} else {
+		std::cout << "Cannot find vignetting correction file at " << path << "..." << std::endl;
+	}
+}
+
 void SLMControl::RegisterCommandCallback(const char* name, CallbackFnPtr callback) {
 	cmds_[std::string(name)] = callback;
 }
@@ -329,6 +340,7 @@ void SLMControl::PulseSet(const std::vector<std::string>& toks) {
 	if (stim_.IsRunning()) {
 		stim_.Stop();
 	}
+
 	stim_.ChangeStimPattern(amplitude, duration, frequency);
 }
 

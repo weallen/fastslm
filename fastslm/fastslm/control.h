@@ -66,6 +66,7 @@ public:
 	// NOTE This must be called after initialize
 	void LoadGalvoWaveforms(const std::string& x_path, const std::string& y_path); 
 	void LoadCenterWaveforms(const std::string& x_path, const std::string& y_path);
+	void LoadVignettingCorrectionMap(const std::string& path);
 
 	// main function to update SLM display
 	void Update();

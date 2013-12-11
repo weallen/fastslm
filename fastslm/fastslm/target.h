@@ -42,7 +42,9 @@ class TargetDatabase {
 public:
 	TargetDatabase() {}
 	TargetDatabase(int w, int h, int d)
-		: M_(w), N_(h), Z_(d) {}
+		: M_(w), N_(h), Z_(d) {
+		vignetting_ = af::constant(1.0, w, h);
+	}
 
 	virtual ~TargetDatabase() {}
 
@@ -57,6 +59,9 @@ public:
 
 	static Calibration LoadCalibration(const std::string& fname);
 
+	af::array GetVignettingCorrection() { return vignetting_; }
+	void SetVignettingCorrection(af::array& map) { vignetting_ = map; }
+
 	af::array GenerateTargetImage(const std::vector<int>& curr_targets);
 
 private:
@@ -66,6 +71,7 @@ private:
 
 	Calibration calib_;
 
+	af::array vignetting_;
 	std::vector<Position> targets_;
 
 };

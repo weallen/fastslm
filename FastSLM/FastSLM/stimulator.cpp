@@ -176,7 +176,7 @@ void CenterGalvosRunner::Start() {
 
 	DAQmxErrChk (DAQmxWriteAnalogF64(handle_, ((ContinuousSpiralBuffer*)buffer_)->GetNumSamplesPerChannel(),0,10.0,DAQmx_Val_GroupByChannel, buffer_->GetBuffer(), NULL, NULL));
 	DAQmxErrChk (DAQmxStartTask(handle_));
-	Sleep(3);
+	DAQmxErrChk (DAQmxWaitUntilTaskDone(handle_, DAQmx_Val_WaitInfinitely));
 	DAQmxErrChk (DAQmxClearTask(handle_));
 }
 

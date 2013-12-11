@@ -4,13 +4,17 @@ af::array TargetDatabase::GenerateTargetImage(const std::vector<int>& curr_targe
 	af::array target_image = af::constant(0, M_, N_, Z_);
 	int xpos, ypos, idx;
 
-		for (int i = 0; i < curr_targets.size(); ++i) {
-			idx = curr_targets[i];
-			xpos = std::min<int>(floor(targets_[idx].x * (M_ - 1)), M_ - 1);
-			ypos = std::min<int>(floor(targets_[idx].y * (N_ - 1)), N_ - 1);
-			target_image(xpos, ypos, floor(targets_[idx].z)) = 255;//std::numeric_limits<float>::max();
-		}
+	for (int i = 0; i < curr_targets.size(); ++i) {
+		idx = curr_targets[i];
+		xpos = std::min<int>(floor(targets_[idx].x * (M_ - 1)), M_ - 1);
+		ypos = std::min<int>(floor(targets_[idx].y * (N_ - 1)), N_ - 1);
+		target_image(xpos, ypos, floor(targets_[idx].z)) = 255.0;//std::numeric_limits<float>::max();
+	}
 	
+	for (int z = 0; z < Z_; ++z) {
+		target_image(af::span, af::span, z) /= vignetting_;
+		target_image(af::span, af::span, z) = (target_image(af::span, af::span, z) * af::max(af::max(target_image(af::span, af::span, z)))) * 255.0;
+	}
 
 	return target_image;
 }

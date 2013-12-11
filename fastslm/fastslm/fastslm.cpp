@@ -95,8 +95,11 @@ int main(int argc, char** argv) {
 		std::string x_center_path = std::string("C:\\Users\\tardigrade\\SLM\\fastslm_working\\fastslm\\feedback\\x_center.txt");
 		std::string y_center_path = std::string("C:\\Users\\tardigrade\\SLM\\fastslm_working\\fastslm\\feedback\\y_center.txt");
 
+		std::string vignetting_path = std::string("C:\\Users\\tardigrade\\SLM\\SLM\\vignettingmap_cal.png");
+
 		controller.LoadGalvoWaveforms(x_galvo_path, y_galvo_path);
 		controller.LoadCenterWaveforms(x_center_path, y_center_path);
+		controller.LoadVignettingCorrectionMap(vignetting_path);
 
 		// Initialize OpenGL display
 		std::cout << "[DEBUG] Initializing graphics..." << std::endl;
