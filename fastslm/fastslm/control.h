@@ -64,7 +64,8 @@ public:
 	void Initialize(int* lut, concurrency::concurrent_queue<std::string>* q, Calibration calib);
 
 	// NOTE This must be called after initialize
-	void LoadGalvoWaveforms(const std::string& x_path, const std::string& y_path, int N); 
+	void LoadGalvoWaveforms(const std::string& x_path, const std::string& y_path); 
+	void LoadCenterWaveforms(const std::string& x_path, const std::string& y_path);
 
 	// main function to update SLM display
 	void Update();
@@ -141,6 +142,7 @@ private:
 	// NIDAQ stuff
 	ContinuousSpiralRunner spiral_; // object to continuously produce spirals
 	StimPatternRunner stim_; // object to produce stimulation Pockel's cell signals
+	CenterGalvosRunner center_;
 
 	// GS stuff
 	array source_; // random source mask used to initialize each call to GS

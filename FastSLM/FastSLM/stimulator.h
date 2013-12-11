@@ -65,7 +65,7 @@ public:
 	// fnameX is file with X galvo signal
 	// fnameY is file with Y galvo signal
 	// N is number of samples to read from file (must be less than length of file)
-	void LoadGalvoSignals(const char* fnameX, const char* fnameY, int N);
+	void LoadGalvoSignals(const char* fnameX, const char* fnameY);
 };
 
 class NIDAQTaskRunner {
@@ -80,8 +80,11 @@ public:
 	int GetSamplingRate() { return sample_rate_; }
 	void SetSamplingRate(int sample_rate) { sample_rate_ = sample_rate; }
 	bool IsRunning() { return is_running_; }
+	void SetIsRunning(bool is_running) { is_running_ = is_running; }
+
 protected:
 	void HandleNIDAQError();
+	static int32 CVICALLBACK DoneCallback(TaskHandle taskHandle, int32 status, void *callbackData);
 
 	NIDAQBuffer* buffer_;
 	TaskHandle handle_;
@@ -100,11 +103,26 @@ public:
 	virtual void Start();
 	virtual void Stop();
 	
-	void LoadSpirals(const char* nameX, const char* nameY, int N);
+	void LoadSpirals(const char* nameX, const char* nameY);
 
 private:
 	bool has_loaded_spiral_;
 	// no variables
+};
+
+class CenterGalvosRunner : public NIDAQTaskRunner {
+public:
+	CenterGalvosRunner() : NIDAQTaskRunner(), has_loaded_waveform_(false) {}
+	virtual ~CenterGalvosRunner() {}
+
+	virtual void Init();
+	virtual void Start();
+	virtual void Stop();
+
+	void LoadWaveform(const char* nameX, const char* nameY);
+
+private:
+	bool has_loaded_waveform_;
 };
 
 class StimPatternRunner : public NIDAQTaskRunner {
@@ -116,10 +134,8 @@ public:
 	virtual void Stop();
 
 	void ChangeStimPattern(float64 amplitude, float64 duration, float64 frequency);
-	void SetIsRunning(bool is_running) { is_running_ = is_running; }
 
 private:
-	static int32 CVICALLBACK DoneCallback(TaskHandle taskHandle, int32 status, void *callbackData);
 	float64 stim_duration_;
 	bool stim_has_changed_;
 };

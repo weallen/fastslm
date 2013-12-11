@@ -89,10 +89,14 @@ int main(int argc, char** argv) {
 		std::cout << "[DEBUG] Initializing controller..." << std::endl;
 		controller.Initialize(lut, queue, calib);
 
-		std::string x_galvo_path = std::string("C:\\Users\\tardigrade\\SLM\\x_galvo.txt");
-		std::string y_galvo_path = std::string("C:\\Users\\tardigrade\\SLM\\y_galvo.txt");
-		int Nsamples = 321; // this should definitely not be hardcoded
-		controller.LoadGalvoWaveforms(x_galvo_path, y_galvo_path, Nsamples);
+		std::string x_galvo_path = std::string("C:\\Users\\tardigrade\\SLM\\fastslm_working\\fastslm\\feedback\\x_galvo.txt");
+		std::string y_galvo_path = std::string("C:\\Users\\tardigrade\\SLM\\fastslm_working\\fastslm\\feedback\\y_galvo.txt");
+		
+		std::string x_center_path = std::string("C:\\Users\\tardigrade\\SLM\\fastslm_working\\fastslm\\feedback\\x_center.txt");
+		std::string y_center_path = std::string("C:\\Users\\tardigrade\\SLM\\fastslm_working\\fastslm\\feedback\\y_center.txt");
+
+		controller.LoadGalvoWaveforms(x_galvo_path, y_galvo_path);
+		controller.LoadCenterWaveforms(x_center_path, y_center_path);
 
 		// Initialize OpenGL display
 		std::cout << "[DEBUG] Initializing graphics..." << std::endl;

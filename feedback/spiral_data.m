@@ -16,21 +16,45 @@ centeringStopY = centeringIdxStartY+360;
 centeringIdxStart = 360956+116; 
 centeringIdxStop = centeringIdxStart + 179;
 
-plot(x(centeringStartX:2:centeringStopX),'r');
+plot(x(centeringStartX:centeringStopX),'r');
 hold on;
-plot(y(centeringStartY:2:centeringStopY),'r');
-hold on;
-plot(X(centeringIdxStart:centeringIdxStop),'b');
-hold on;
-plot(Y(centeringIdxStart:centeringIdxStop),'b');
-recenteringStartX = 0;
-recenteringStopX = 0;
+plot(y(centeringStartY:centeringStopY),'b');
+%hold on;
+%plot(X(centeringIdxStart:centeringIdxStop+1),'b');
+%hold on;
+%plot(Y(centeringIdxStart:centeringIdxStop+1),'b');
+
+%%
+xCenter = X(centeringIdxStart:centeringIdxStop+1);
+yCenter = Y(centeringIdxStart:centeringIdxStop+1);
+
+%%
+
+xq = linspace(0, numel(xCenter), numel(xCenter)*100);
+vqX = interp1(1:numel(xCenter), xCenter, xq);
+plot(vqX);
+
+yq = linspace(0, numel(yCenter), numel(yCenter)*100);
+vqY = interp1(1:numel(yCenter), yCenter, yq);
+plot(vqX(101:end)); hold on; plot(vqY(101:end),'r');
+vqX = vqX(101:end);
+vqY = vqY(101:end);
+
+fXCenter = fopen('x_center.txt','w');
+fYCenter = fopen('y_center.txt','w');
+for i=1:numel(xCenter)
+   fprintf(fXCenter, '%10f\n', xCenter(i)); 
+   fprintf(fYCenter, '%10f\n', yCenter(i));    
+end
+fclose(fYCenter);
+fclose(fXCenter);    
 
 %%
 %waveformStartX = centeringStopX+5;
 %waveformStartY = centeringStopY;
 waveformStartX = centeringStopX;
 waveformStartY = centeringStopY;
+waveformStart = centeringIdxStop;
 N = 5;
 %offset = repmat(1:N, ;
 t = 641;
@@ -43,16 +67,22 @@ plot(repmat(data,N,1), 'r');
 
 
 %%
-t = 642;
+N = 10;
+t = 643;
+t_low = 322;
 dataRepsX = zeros(t+1, N);
 dataRepsY = zeros(t+1, N);
+dataRepsX_low = zeros(t_low+1,N);
+dataRepsY_low = zeros(t_low+1,N);
 
 for i=1:N
     idxX = (waveformStartX + (i-1)*t ):(waveformStartX + i*t);
-    idxY = (waveformStartY + (i-1)*t ):(waveformStartY + i*t);
-    numel(idx)
-    dataRepsX(:,i) = x(idxX);    
+    idxY = (waveformStartY + (i-1)*t ):(waveformStartY + i*t);    
+    idx = (waveformStart + (i-1)*t_low):(waveformStart + i*t_low);
+    dataRepsX(:,i) = x(idxX);        
     dataRepsY(:,i) = y(idxY);
+    dataRepsX_low(:,i) = X(idx);
+    dataRepsY_low(:,i) = Y(idx);
 end
 dataRepsX(1,:)
 dataRepsX(end,:)
@@ -63,11 +93,16 @@ plot(dataRepsY, 'b');
 %%
 meanSignalX = mean(dataRepsX,2);
 meanSignalY = mean(dataRepsY,2);
+meanSignalX_low = mean(dataRepsX_low,2);
+meanSignalY_low = mean(dataRepsY_low,2);
 
-plot(meanSignalX,'-');
+plot(meanSignalX(1:2:numel(meanSignalX)),'-r');
 hold on;
-plot(meanSignalY,'-r');
-
+plot(meanSignalY(1:2:numel(meanSignalY)),'-b');
+%hold on;
+%plot(meanSignalX_low,'-b');
+%hold on;
+%plot(meanSignalY_low,'-b');
 
 
 
@@ -82,8 +117,8 @@ plot(vq);
 xFit = createFit(meanSignalX);
 yFit = createFit(meanSignalY);
 
-xFilt = xFit(linspace(0, 500, 5000));
-yFilt = yFit(linspace(0, 500, 5000));
+xFilt = xFit(1:numel(meanSignalX));
+yFilt = yFit(1:numel(meanSignalY));
 
 %% save data
 fX = fopen('x_galvo.txt','w');

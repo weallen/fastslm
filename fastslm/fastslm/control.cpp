@@ -41,9 +41,13 @@ void SLMControl::Initialize(int* lut, concurrency::concurrent_queue<std::string>
 	stim_.SetSamplingRate(nidaq_sample_rate);
 	stim_.Init();
 
-	int spiral_sample_rate = 125000;
+	int spiral_sample_rate = 250000; // Note this might be vary
 	spiral_.SetSamplingRate(spiral_sample_rate);
 	spiral_.Init();
+
+	int center_sample_rate = 250000;
+	center_.SetSamplingRate(center_sample_rate);
+	center_.Init();
 
 	// set up command mapping
 	RegisterCommandCallback("BLANK",		&SLMControl::Blank);
@@ -58,10 +62,13 @@ void SLMControl::Initialize(int* lut, concurrency::concurrent_queue<std::string>
 	RegisterCommandCallback("SPIRAL_STOP",	&SLMControl::SpiralStop);
 }
 
-void SLMControl::LoadGalvoWaveforms(const std::string& x_path, const std::string& y_path, int N) {
-	spiral_.LoadSpirals(x_path.c_str(), y_path.c_str(), N);
+void SLMControl::LoadGalvoWaveforms(const std::string& x_path, const std::string& y_path) {
+	spiral_.LoadSpirals(x_path.c_str(), y_path.c_str());
 }
 
+void SLMControl::LoadCenterWaveforms(const std::string& x_path, const std::string& y_path) {
+	center_.LoadWaveform(x_path.c_str(), y_path.c_str());
+}
 
 void SLMControl::RegisterCommandCallback(const char* name, CallbackFnPtr callback) {
 	cmds_[std::string(name)] = callback;
@@ -337,6 +344,8 @@ void SLMControl::PulseStop(const std::vector<std::string>& toks) {
 }
 
 void SLMControl::SpiralStart(const std::vector<std::string>& toks) {
+	center_.Start();
+
 	if (spiral_.IsRunning()) {
 		spiral_.Stop();
 	}

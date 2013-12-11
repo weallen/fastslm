@@ -43,7 +43,7 @@ void StimPatternBuffer::GenerateUniformFreqSignal(float64 amplitude, float64 sti
 
 }
 
-void ContinuousSpiralBuffer::LoadGalvoSignals(const char* fnameX, const char* fnameY, int N) {
+void ContinuousSpiralBuffer::LoadGalvoSignals(const char* fnameX, const char* fnameY) {
 	float curr_val;
 	int i;
 	std::string lineX, lineY;
@@ -51,8 +51,6 @@ void ContinuousSpiralBuffer::LoadGalvoSignals(const char* fnameX, const char* fn
 
 	Reset();
 		
-	num_samples_ = 2*N; // twice as large to account for both channels
-	buffer_ = new float64[num_samples_];
 
 	fX.open(fnameX, std::ios::in);
 	fY.open(fnameY, std::ios::in);
@@ -64,6 +62,17 @@ void ContinuousSpiralBuffer::LoadGalvoSignals(const char* fnameX, const char* fn
 		std::cerr << ERRMSG("Can't open file " << fnameY) << std::endl;
 		return;
 	}
+	
+	int N = 0;
+	while (std::getline(fX, lineX)) {
+		++N;
+	}
+	fX.close();
+	fX.open(fnameX, std::ios::in);
+
+	num_samples_ = 2*N; // twice as large to account for both channels
+	buffer_ = new float64[num_samples_];
+
 	
 	for (i = 0; i < N; ++i) {
 		std::getline(fX, lineX);
@@ -87,15 +96,15 @@ void NIDAQTaskRunner::HandleNIDAQError() {
 		printf("DAQmx Error: %s\n",error_buffer);
 }
 
+int32 NIDAQTaskRunner::DoneCallback(TaskHandle taskHandle, int32 status, void *callbackData)
+{
+	StimPatternRunner* obj = (StimPatternRunner*) callbackData;
+	obj->SetIsRunning(false);
+	return 0;
+}
+
 void ContinuousSpiralRunner::Init() {
 	buffer_ = (NIDAQBuffer*) new ContinuousSpiralBuffer(sample_rate_);
-	DAQmxErrChk (DAQmxCreateTask("SpiralTask",&handle_));
-
-	DAQmxErrChk (DAQmxCreateAOVoltageChan(handle_, "Dev1/ao0","",-10.0,10.0,DAQmx_Val_Volts,NULL));
-	//DAQmxErrChk (DAQmxSetAODataXferMech(handle_, "Dev2/ao0", DAQmx_Val_Interrupts)); // only for PCI
-	
-	DAQmxErrChk (DAQmxCreateAOVoltageChan(handle_, "Dev1/ao1","",-10.0,10.0,DAQmx_Val_Volts,NULL));
-	//DAQmxErrChk (DAQmxSetAODataXferMech(handle_, "Dev2/ao1", DAQmx_Val_Interrupts)); // only for PCI
 }
 
 void ContinuousSpiralRunner::Start() {
@@ -103,6 +112,17 @@ void ContinuousSpiralRunner::Start() {
 		std::cout << ERRMSG("Cannot start spirals. Need to load spiral waveform!") << std::endl;
 		return;
 	}
+	if (handle_ != NULL) {
+		DAQmxErrChk (DAQmxClearTask(handle_));
+	}
+
+	DAQmxErrChk (DAQmxCreateTask("SpiralTask",&handle_));
+
+	DAQmxErrChk (DAQmxCreateAOVoltageChan(handle_, "Dev1/ao0","",-10.0,10.0,DAQmx_Val_Volts,NULL));
+	//DAQmxErrChk (DAQmxSetAODataXferMech(handle_, "Dev2/ao0", DAQmx_Val_Interrupts)); // only for PCI
+	
+	DAQmxErrChk (DAQmxCreateAOVoltageChan(handle_, "Dev1/ao1","",-10.0,10.0,DAQmx_Val_Volts,NULL));
+	//DAQmxErrChk (DAQmxSetAODataXferMech(handle_, "Dev2/ao1", DAQmx_Val_Interrupts)); // only for PCI
 
 	// TODO Make this center the galvos.
 	DAQmxErrChk (DAQmxCfgSampClkTiming(handle_,"", buffer_->GetSamplingRate(), DAQmx_Val_Rising, DAQmx_Val_ContSamps, buffer_->GetNumSamples()));
@@ -122,10 +142,53 @@ void ContinuousSpiralRunner::Stop() {
 	// TODO Make this return galvos to the corner.
 }
 
-void ContinuousSpiralRunner::LoadSpirals(const char* nameX, const char* nameY, int N) {
-	((ContinuousSpiralBuffer*)buffer_)->LoadGalvoSignals(nameX, nameY, N); 
+void ContinuousSpiralRunner::LoadSpirals(const char* nameX, const char* nameY) {
+	((ContinuousSpiralBuffer*)buffer_)->LoadGalvoSignals(nameX, nameY); 
 	has_loaded_spiral_ = true;
 }
+
+
+void CenterGalvosRunner::Init() {
+	buffer_ = (NIDAQBuffer*) new ContinuousSpiralBuffer(sample_rate_);
+}
+
+void CenterGalvosRunner::Start() {
+	if (!has_loaded_waveform_) {
+		std::cout << ERRMSG("Cannot center galvos. Need to load waveform!") << std::endl;
+		return;
+	}
+
+	if (handle_ != NULL) {
+		DAQmxErrChk (DAQmxClearTask(handle_));
+	}
+	DAQmxErrChk (DAQmxCreateTask("WaveformTask",&handle_));
+	DAQmxErrChk (DAQmxRegisterDoneEvent(handle_, 0, &DoneCallback, (void*)this));
+
+	DAQmxErrChk (DAQmxCreateAOVoltageChan(handle_, "Dev1/ao0","",-10.0,10.0,DAQmx_Val_Volts,NULL));
+	//DAQmxErrChk (DAQmxSetAODataXferMech(handle_, "Dev2/ao0", DAQmx_Val_Interrupts)); // only for PCI
+	
+	DAQmxErrChk (DAQmxCreateAOVoltageChan(handle_, "Dev1/ao1","",-10.0,10.0,DAQmx_Val_Volts,NULL));
+	//DAQmxErrChk (DAQmxSetAODataXferMech(handle_, "Dev2/ao1", DAQmx_Val_Interrupts)); // only for PCI
+
+	// TODO Make this center the galvos.
+	DAQmxErrChk (DAQmxCfgSampClkTiming(handle_,"", buffer_->GetSamplingRate(), DAQmx_Val_Rising, DAQmx_Val_FiniteSamps, buffer_->GetNumSamples()));
+	DAQmxErrChk (DAQmxSetWriteAttribute (handle_, DAQmx_Write_RegenMode, DAQmx_Val_DoNotAllowRegen));
+
+	DAQmxErrChk (DAQmxWriteAnalogF64(handle_, ((ContinuousSpiralBuffer*)buffer_)->GetNumSamplesPerChannel(),0,10.0,DAQmx_Val_GroupByChannel, buffer_->GetBuffer(), NULL, NULL));
+	DAQmxErrChk (DAQmxStartTask(handle_));
+	Sleep(3);
+	DAQmxErrChk (DAQmxClearTask(handle_));
+}
+
+void CenterGalvosRunner::Stop() {
+	is_running_ = false;
+}
+
+void CenterGalvosRunner::LoadWaveform(const char* nameX, const char* nameY) {
+	((ContinuousSpiralBuffer*)buffer_)->LoadGalvoSignals(nameX, nameY); 
+	has_loaded_waveform_ = true;
+}
+
 
 void StimPatternRunner::Init() {
 	buffer_ = (NIDAQBuffer*) new StimPatternBuffer(sample_rate_);
@@ -141,7 +204,7 @@ void StimPatternRunner::Start() {
 		DAQmxErrChk (DAQmxRegisterDoneEvent(handle_, 0, &DoneCallback, (void*)this));
 		DAQmxErrChk (DAQmxCreateAOVoltageChan(handle_, "Dev2/ao0","",-10.0,10.0,DAQmx_Val_Volts,NULL));
 		//DAQmxErrChk (DAQmxSetAODataXferMech(handle_, "Dev2/ao2", DAQmx_Val_Interrupts)); // only for PCI
-		DAQmxErrChk (DAQmxCfgSampClkTiming(handle_,"", buffer_->GetSamplingRate(), DAQmx_Val_Rising, DAQmx_Val_ContSamps, buffer_->GetNumSamples()));
+		DAQmxErrChk (DAQmxCfgSampClkTiming(handle_,"", buffer_->GetSamplingRate(), DAQmx_Val_Rising, DAQmx_Val_FiniteSamps, buffer_->GetNumSamples()));
 		DAQmxErrChk (DAQmxSetWriteAttribute (handle_, DAQmx_Write_RegenMode, DAQmx_Val_DoNotAllowRegen));
 	}
 
@@ -151,6 +214,8 @@ void StimPatternRunner::Start() {
 }
 
 void StimPatternRunner::Stop() {
+	float64 zero[] = { 0.0, 0.0 };
+
 	bool32 complete;
 	DAQmxErrChk (DAQmxGetTaskComplete(handle_, &complete));
 	if (!complete) {
@@ -165,10 +230,4 @@ void StimPatternRunner::ChangeStimPattern(float64 amplitude, float64 duration, f
 	stim_has_changed_ = true;
 }
 
-int32 StimPatternRunner::DoneCallback(TaskHandle taskHandle, int32 status, void *callbackData)
-{
-	StimPatternRunner* obj = (StimPatternRunner*) callbackData;
-	obj->SetIsRunning(false);
-	return 0;
-}
 
