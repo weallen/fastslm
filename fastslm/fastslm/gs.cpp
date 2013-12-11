@@ -78,6 +78,7 @@ array Hologram::PropTF(const array& u1, const float z) {
 	int n = fx.elements();
 	array FY = tile(fx, 1, n);
 	array FX = tile(fx.T(), n, 1);
+
 	array H = fftshift(exp(af::i *  complex(- af::Pi * wavelength_ * z * (FX*FX + FY*FY))));
 	array U1 = fft2(fftshift(u1));
 	array U2 = H * U1;
@@ -114,7 +115,6 @@ void Hologram::MakeH() {
 	int n = fx.elements();
 	array FX = tile(fx, 1, n);
 	array FY = tile(fx.T(), n, 1);
-
 	//array H = fftshift(exp( af::i * complex(- af::Pi * z * (pow2(FX) + pow2(FY)))));
 	H_ = constant(0, M_, N_, Z_, c32);
 	for (int z = 0; z < Z_; ++z) {

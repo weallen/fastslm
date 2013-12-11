@@ -28,6 +28,7 @@ void Tokenize(const std::string& currstr, std::vector<std::string>& tokens) {
 	std::stringstream ss(currstr);
 	tokens.clear();
 	while (ss >> buf) {
+		buf.erase(buf.find_last_not_of(" \n\r\t")+1); // trim any trailing whitespace
 		tokens.push_back(buf);
 	}
 }

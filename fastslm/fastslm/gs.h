@@ -15,7 +15,7 @@ const float z_fudge_factor = 4.0;
 
 // constant z offset to compensate for improperly aligned optics
 // XXX THIS IS HACK -- SHOULD BE A PARAMETER
-const float const_z_offset_ = 42E-6; 
+const float const_z_offset_ = 41E-6; 
 
 /*
  * NOTE: To specify Z-planes, give GS the number of Z planes, min Z, max Z (integers), and Z spacing (float)

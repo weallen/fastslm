@@ -9,7 +9,7 @@ void WarmUp(int* lut) {
 	Pixel* buffer = MakeRGBImage(M, N); // empty buffer
 
 	// Init GS to pre-JIT compile the arrayfire code
-	std::cout << "Warming up GPU code..." << std::endl;
+	std::cout << "[DEBUG] Warming up GPU code..." << std::endl;
 	array source = af::randn(M, N); 
 	timer::start();
 	array target = makeRandArray();
@@ -23,7 +23,7 @@ void WarmUp(int* lut) {
 	ProcessLUT(retrieved_phase, lut, buffer);
 
 	delete[] buffer;
-	std::cout << "Warmed up in " << timer::stop() << " seconds..." << std::endl;
+	std::cout << "[DEBUG] Warmed up in " << timer::stop() << " seconds..." << std::endl;
 }
 
 void SLMControl::Initialize(int* lut, concurrency::concurrent_queue<std::string>* q, Calibration calib) {
@@ -36,14 +36,35 @@ void SLMControl::Initialize(int* lut, concurrency::concurrent_queue<std::string>
 	calib_ = calib;
 	td_.SetCalibration(calib_);
 
+	// initialize NIDAQ stuff
+	int nidaq_sample_rate = 100000;
+	stim_.SetSamplingRate(nidaq_sample_rate);
+	stim_.Init();
+
+	spiral_.SetSamplingRate(nidaq_sample_rate);
+	spiral_.Init();
+
 	// set up command mapping
-	cmds_["BLANK"] = BLANK;
-	cmds_["SHIFT"] = SHIFT;
-	cmds_["STIM"] = STIM;
-	cmds_["RESET"] = RESET;
-	cmds_["LOAD"] = LOAD;
+	RegisterCommandCallback("BLANK",		&SLMControl::Blank);
+	RegisterCommandCallback("SHIFT",		&SLMControl::ApplyShift);
+	RegisterCommandCallback("STIM",			&SLMControl::ChangeStim);
+	RegisterCommandCallback("RESET",		&SLMControl::Reset);
+	RegisterCommandCallback("LOAD",			&SLMControl::LoadCells);
+	RegisterCommandCallback("PULSE_SET",	&SLMControl::PulseSet); 
+	RegisterCommandCallback("PULSE_START",	&SLMControl::PulseStart);
+	RegisterCommandCallback("PULSE_STOP",	&SLMControl::PulseStop);
+	RegisterCommandCallback("SPIRAL_START", &SLMControl::SpiralStart);
+	RegisterCommandCallback("SPIRAL_STOP",	&SLMControl::SpiralStop);
 }
 
+void SLMControl::LoadGalvoWaveforms(const std::string& x_path, const std::string& y_path, int N) {
+	spiral_.LoadSpirals(x_path.c_str(), y_path.c_str(), N);
+}
+
+
+void SLMControl::RegisterCommandCallback(const char* name, CallbackFnPtr callback) {
+	cmds_[std::string(name)] = callback;
+}
 
 void SLMControl::Update() {
 	// try to get current command to update state
@@ -60,7 +81,6 @@ void SLMControl::Update() {
 	}
 
 	// apply shift
-	
 	if (apply_shift_) {
 		h_.ApplyShift(offsetX_, offsetY_, retrieved_phase_, shifted_phase_);
 		ProcessLUT(shifted_phase_, lut_, current_mask_);
@@ -71,33 +91,59 @@ void SLMControl::Update() {
 void SLMControl::GetCurrentCommands() {
 	std::string currstr;
 	std::vector<std::string> tokens;
-		while (cmd_queue_->try_pop(currstr)) {
+	while (cmd_queue_->try_pop(currstr)) {
 #ifdef _DEBUG
-			std::cout << currstr << std::endl;
+		std::cout << "[DEBUG] " << currstr << "..." << std::endl;
 #endif
+		// remove trailing NULL character that is the produce of ZMQ
+		currstr = currstr.substr(0, currstr.size()-1);
 
-			// tokenize string
-			Tokenize(currstr, tokens);
+		// tokenize string
+		Tokenize(currstr, tokens);
 
-			// apply command
-			switch (cmds_[tokens[0]]) {
-			case BLANK:
-				Blank(tokens);
-				continue;
-			case SHIFT:
-				ApplyShift(tokens);
-				continue;
-			case STIM:
-				ChangeStim(tokens);
-				continue;
-			case RESET:
-				Reset(tokens);
-				continue;
-			case LOAD:
-				LoadCells(tokens);
-				continue;
+		// apply command
+		std::string cmd = tokens[0];
+
+		std::map<std::string, CallbackFnPtr>::iterator it = cmds_.find(cmd);
+		if (it != cmds_.end()) {
+			CallbackFnPtr callback = cmds_[cmd];
+			if (callback != NULL) {
+				(this->*callback)(tokens);
+			} else {
+				std::cout << "[ERROR] Null callback pointer for " << cmd << std::endl;
 			}
+		} else {
+			std::cout << "[ERROR] Command " << cmd << " not found" << std::endl;
 		}
+	}
+}
+
+void SLMControl::DebugCalibPattern() {
+	std::vector<std::string> toks;
+	toks.push_back("RESET");
+	toks.push_back("512");
+	toks.push_back("512");
+	toks.push_back("10");
+	toks.push_back("0.00001");
+	toks.push_back("0");
+	toks.push_back("9");
+	Reset(toks);
+	//td_.AddTarget(Position(1.0 - 279.0/512.0, 206.0/512.0, 0));
+	//td_.AddTarget(Position(1.0 - 206.0/512.0, 256.0/512.0, 0));
+	//td_.AddTarget(Position(1.0 - 231.0/512.0, 288.0/512.0, 0));
+	td_.AddTarget(Position(279.0/512.0, 1.0 - 206.0/512.0, 0));
+	td_.AddTarget(Position(206.0/512.0, 1.0 - 256.0/512.0, 0));
+	td_.AddTarget(Position(231.0/512.0, 1.0 - 288.0/512.0, 0));
+	td_.ApplyCalibration();
+	cells_loaded_ = true;
+
+	std::vector<int> target_idx;
+	target_idx.push_back(0);
+	target_idx.push_back(1);
+	target_idx.push_back(2);
+
+	target_ = td_.GenerateTargetImage(target_idx);
+	compute_gs_ = true;
 }
 
 void SLMControl::DebugInitCells() {
@@ -115,6 +161,7 @@ void SLMControl::DebugInitCells() {
 		float x = (rand() % 512)/512.0;
 		float y = (rand() % 512)/512.0;
 		float z = (rand() % 10);
+		z = 0;
 		td_.AddTarget(Position(x,y,z));
 	}
 	cells_loaded_ = true;
@@ -122,7 +169,7 @@ void SLMControl::DebugInitCells() {
 
 void SLMControl::DebugGenRandomPattern() {
 	std::vector<int> target_idx;
-	for (int i = 0; i < 10; ++i) {
+	for (int i = 0; i < 25; ++i) {
 		int idx = rand() % 1000; // assumes 1000 random cells
 		target_idx.push_back(idx);
 	}
@@ -144,6 +191,7 @@ void SLMControl::DebugSingleCell(float z) {
 	td_.AddTarget(Position(0.5, 0.5, 0));
 	std::vector<int> target_idx;
 	target_idx.push_back(0);
+	td_.ApplyCalibration();
 	target_ = td_.GenerateTargetImage(target_idx);
 	cells_loaded_ = true;
 	compute_gs_ = true;
@@ -165,9 +213,8 @@ void SLMControl::LoadCells(const std::vector<std::string>& toks) {
 		z = 4.1E-5;
 		if (x <= 1.0 && y <= 1.0) {
 			td_.AddTarget(Position(x, y, z));
-		}
-		else {
-			std::cout << "ERROR: Cell x, y coordinates must be within [0, 1]" << std::endl;
+		} else {
+			std::cout << "[ERROR] Cell x, y coordinates must be within [0, 1]" << std::endl;
 		}
 	}
 
@@ -211,13 +258,13 @@ void SLMControl::ChangeStim(const std::vector<std::string>& toks) {
 			if (cellid < numtargets) {
 				targets.push_back(cellid);
 			} else {
-				std::cout << "ERROR: Index of cell " << cellid << " greater than number of targets (" << numtargets << ")" << std::endl;
+				std::cout << "[ERROR] Index of cell " << cellid << " greater than number of targets (" << numtargets << ")" << std::endl;
 			}
 		}
 		target_ = td_.GenerateTargetImage(targets);
 		compute_gs_ = true;
 	} else {
-		std::cout << "ERROR: No cell positions loaded" << std::endl;
+		std::cout << "[ERROR] No cell positions loaded" << std::endl;
 	}
 }
 
@@ -225,8 +272,16 @@ void SLMControl::ChangeStim(const std::vector<std::string>& toks) {
 void SLMControl::Reset(const std::vector<std::string>& toks) {
 	
 	if (toks.size() != 7) {
-		std::cout << "ERROR: Reset string has incorrect number of elements!" << std::endl;
+		std::cout << "[ERROR] Reset string has incorrect number of elements!" << std::endl;
 		return;
+	}
+
+	if (stim_.IsRunning()) {
+		stim_.Stop();
+	}
+
+	if (spiral_.IsRunning()) {
+		spiral_.Stop();
 	}
 
 	//std::cout << "Resetting..." << std::endl;
@@ -253,4 +308,42 @@ void SLMControl::Reset(const std::vector<std::string>& toks) {
 	compute_gs_ = false;
 	cells_loaded_ = false;
 	apply_shift_ = false;
+}
+
+void SLMControl::PulseSet(const std::vector<std::string>& toks) {
+	if (toks.size() != 4) {
+		std::cout << "[ERROR] Pulse set string has incorrect number of elements!" << std::endl;
+	}
+	float64 amplitude = (float64)atof(toks[1].c_str());
+	float64 duration = (float64)atof(toks[2].c_str());
+	float64 frequency = (float64)atof(toks[3].c_str());
+
+	if (stim_.IsRunning()) {
+		stim_.Stop();
+	}
+	stim_.ChangeStimPattern(amplitude, duration, frequency);
+}
+
+void SLMControl::PulseStart(const std::vector<std::string>& toks) {
+	if (stim_.IsRunning()) {
+		stim_.Stop();
+	}
+	stim_.Start();
+}
+
+void SLMControl::PulseStop(const std::vector<std::string>& toks) {
+	stim_.Stop();
+}
+
+void SLMControl::SpiralStart(const std::vector<std::string>& toks) {
+	if (spiral_.IsRunning()) {
+		spiral_.Stop();
+	}
+	spiral_.Start();
+}
+
+void SLMControl::SpiralStop(const std::vector<std::string>& toks) {
+	if (spiral_.IsRunning()) {
+		spiral_.Stop();
+	}
 }

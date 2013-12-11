@@ -49,31 +49,30 @@ int main(int argc, char** argv) {
 		int Z = 10;
 		
 		// Load lookup table and make buffer for image
-		//std::string lutpath = std::string("C:\\Users\\tardigrade\\SLM\\SLM\\SLM2047.lut");
-
-		std::string lutpath = std::string("C:\\Users\\Admin\\Desktop\\slmscope\\SLM\\SLM2047.lut");
+		std::string lutpath = std::string("C:\\Users\\tardigrade\\SLM\\SLM\\SLM2047.lut");
+		//std::string lutpath = std::string("C:\\Users\\Admin\\Desktop\\slmscope\\SLM\\SLM2047.lut");
 
 		std::ifstream lutfile(lutpath);
 		if (lutfile) {
-			std::cout << "Loading LUT from " << lutpath << "..." << std::endl;
+			std::cout << "[DEBUG] Loading LUT from " << lutpath << "..." << std::endl;
 			// TODO Add error handling
 			lut = LoadLUT(lutpath);
 		} else {
-			std::cout << "ERROR: LUT file at " << lutpath << " not found!" << std::endl;
+			std::cout << "[ERROR] LUT file at " << lutpath << " not found!" << std::endl;
 			exit(-1);
 		}
 
-		//std::string calibpath = std::string("C:\\Users\\tardigrade\\SLM\\SLM\\cal.txt");
-		std::string calibpath = std::string("C:\\Users\\Admin\\Desktop\\slmscope\\SLM\\cal.txt");
+		std::string calibpath = std::string("C:\\Users\\tardigrade\\SLM\\SLM\\cal.txt");
+		//std::string calibpath = std::string("C:\\Users\\Admin\\Desktop\\slmscope\\SLM\\cal.txt");
 		std::ifstream calibfile(calibpath);
 		
 		Calibration calib;
 		if (calibfile) {
-			std:: cout << "Loading calibration from " << calibpath << "..." << std::endl;
+			std::cout << "[DEBUG] Loading calibration from " << calibpath << "..." << std::endl;
 			calib = TargetDatabase::LoadCalibration(calibpath);
 		} else {
-			std::cout << "ERROR: Calibration file at " << calibpath << " not found!" << std::endl;
-			std::cout << "WARNING: Using no calibration" << std::endl;
+			std::cout << "[ERROR] Calibration file at " << calibpath << " not found!" << std::endl;
+			std::cout << "[ERROR] Using no calibration" << std::endl;
 		}
 		
 		// debug calibration
@@ -87,11 +86,15 @@ int main(int argc, char** argv) {
 		
 		// Initialize controller
 		concurrency::concurrent_queue<std::string>* queue = nh.GetQueue();
-		std::cout << "Initializing controller..." << std::endl;
+		std::cout << "[DEBUG] Initializing controller..." << std::endl;
 		controller.Initialize(lut, queue, calib);
 
+		std::string x_galvo_path = std::string("C:\\Users\\tardigrade\\SLM\\x_galvo.txt");
+		std::string y_galvo_path = std::string("C:\\Users\\tardigrade\\SLM\\y_galvo.txt");
+		controller.LoadGalvoWaveforms(x_galvo_path, y_galvo_path, 500);
+
 		// Initialize OpenGL display
-		std::cout << "Initializing graphics..." << std::endl;
+		std::cout << "[DEBUG] Initializing graphics..." << std::endl;
 		GLFWwindow* window;
 		if (!glfwInit()) {
 			exit(EXIT_FAILURE);
@@ -123,7 +126,7 @@ int main(int argc, char** argv) {
 
 		if (!window) {
 			glfwTerminate();
-			std::cout << "Couldn't initialize display." << std::endl;
+			std::cout << "[ERROR] Couldn't initialize display." << std::endl;
 			exit(EXIT_FAILURE);
 		}
 
@@ -134,7 +137,9 @@ int main(int argc, char** argv) {
 
 		// debug stuff
 		//controller.DebugInitCells();
-		controller.DebugSingleCell(0.0f);
+		//controller.DebugGenRandomPattern();
+		//controller.DebugSingleCell(0.0f);
+		//controller.DebugCalibPattern();
 
 		// initialize asych IO
 		nh.Connect("127.0.0.1", 9091);
@@ -161,7 +166,7 @@ int main(int argc, char** argv) {
 		delete[] lut;
 
 		double elapsed = timer::stop();
-		printf("Ran at %g (Hz)\n", 1/(elapsed/frame));
+		printf("[DEBUG] Ran at %g (Hz)\n", 1/(elapsed/frame));
 
 		printf("hit [enter]...");
 		getchar();
