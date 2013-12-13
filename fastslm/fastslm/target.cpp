@@ -1,22 +1,49 @@
 #include "target.h"
 
 af::array TargetDatabase::GenerateTargetImage(const std::vector<int>& curr_targets) {
-	af::array target_image = af::constant(0, M_, N_, Z_);
+	/*af::array target_image = af::constant(0, M_, N_, Z_);
 	int xpos, ypos, idx;
 
 	for (int i = 0; i < curr_targets.size(); ++i) {
 		idx = curr_targets[i];
 		xpos = std::min<int>(floor(targets_[idx].x * (M_ - 1)), M_ - 1);
 		ypos = std::min<int>(floor(targets_[idx].y * (N_ - 1)), N_ - 1);
-		target_image(xpos, ypos, floor(targets_[idx].z)) = 255.0;//std::numeric_limits<float>::max();
+		target_image(xpos, ypos, floor(targets_[idx].z)) = 1.0;//std::numeric_limits<float>::max();
 	}
 	
-	for (int z = 0; z < Z_; ++z) {
+	// NOTE THAT FOR NOW ONLY APPLIES TO FOCAL PLANE -- UNDERFLOWS WHEN THERE ARE NO SPOTS IN PLANE
+	for (int z = 0; z < 1; ++z) {
 		target_image(af::span, af::span, z) /= vignetting_;
-		target_image(af::span, af::span, z) = (target_image(af::span, af::span, z) * af::max(af::max(target_image(af::span, af::span, z)))) * 255.0;
-	}
+		float max_val; int max_idx;
+		float min_val; int min_idx;
+		af::max<float>(&max_val, &max_idx, target_image(af::span, af::span, z));
+		af::min<float>(&min_val, &min_idx, target_image(af::span, af::span, z));
 
-	return target_image;
+		std::cout << min_val << " " << max_val << std::endl;
+		target_image(af::span, af::span, z) /= max_val;
+		target_image(af::span, af::span, z) *= 255.0;
+	}
+	af::array x = target_image(af::span, af::span, 0).copy();
+	af::saveimage("C:\\Users\\tardigrade\\SLM\\testimg.png", x/255.0);
+	return target_image;*/
+	af::array target_image = af::constant(0, M_, N_);
+	int xpos, ypos, idx;
+	for (int i = 0; i < curr_targets.size(); ++i) {
+		idx = curr_targets[i];
+		xpos = std::min<int>(floor(targets_[idx].x * (M_ - 1)), M_ - 1);
+		ypos = std::min<int>(floor(targets_[idx].y * (N_ - 1)), N_ - 1);
+		target_image(xpos, ypos) = 1.0;//std::numeric_limits<float>::max();
+	}
+	float max_val; int max_idx;
+
+	af::array corrected_image = target_image / vignetting_;
+	af::max<float>(&max_val, &max_idx, corrected_image);
+	corrected_image /= max_val;
+	corrected_image *= 255.0;
+	//std::cout << min_val << " " << max_val << std::endl;
+	//af::saveimage("C:\\Users\\tardigrade\\SLM\\testimg.png", corrected_image/max_val);
+	return corrected_image;
+	
 }
 
 

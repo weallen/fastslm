@@ -29,6 +29,9 @@ xCenter = X(centeringIdxStart:centeringIdxStop+1);
 yCenter = Y(centeringIdxStart:centeringIdxStop+1);
 
 %%
+xCenter = x(centeringStartX:centeringStopX);
+yCenter = y(centeringStartY:centeringStopY);
+%%
 
 xq = linspace(0, numel(xCenter), numel(xCenter)*100);
 vqX = interp1(1:numel(xCenter), xCenter, xq);

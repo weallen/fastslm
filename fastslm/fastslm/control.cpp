@@ -73,9 +73,9 @@ void SLMControl::LoadCenterWaveforms(const std::string& x_path, const std::strin
 void SLMControl::LoadVignettingCorrectionMap(const std::string& path) {
 	std::ifstream vignetting_file(path);
 	if (vignetting_file) {
-		array map = af::loadimage(path.c_str(), false);
-		map = map / af::max(af::max(map));
-		td_.SetVignettingCorrection(map);
+		af::array map = af::loadimage(path.c_str(), false).asfloat();
+		//map /= max_val;
+		vignetting_ = map.copy();
 	} else {
 		std::cout << "Cannot find vignetting correction file at " << path << "..." << std::endl;
 	}
@@ -313,6 +313,7 @@ void SLMControl::Reset(const std::vector<std::string>& toks) {
 
 	h_ = Hologram(M_, N_, Z_, minZ_, maxZ_, Zres_);
 	td_ = TargetDatabase(M_, N_, Z_);
+	td_.SetVignettingCorrection(vignetting_);
 	td_.SetCalibration(calib_);
 
 	if (current_mask_ != NULL) {

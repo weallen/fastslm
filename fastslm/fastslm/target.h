@@ -60,8 +60,8 @@ public:
 	static Calibration LoadCalibration(const std::string& fname);
 
 	af::array GetVignettingCorrection() { return vignetting_; }
-	void SetVignettingCorrection(af::array& map) { vignetting_ = map; }
-
+	void SetVignettingCorrection(const af::array& map) { vignetting_ = map.copy(); }
+	
 	af::array GenerateTargetImage(const std::vector<int>& curr_targets);
 
 private:

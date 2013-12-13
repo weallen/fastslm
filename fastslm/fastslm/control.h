@@ -170,6 +170,8 @@ private:
 	// calbiration stuff
 	Calibration calib_;
 	float z_fudge_factor_;
+	af::array vignetting_;
+
 };
 
 #endif

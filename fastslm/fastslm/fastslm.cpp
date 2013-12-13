@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
 		Calibration calib;
 		if (calibfile) {
 			std::cout << "[DEBUG] Loading calibration from " << calibpath << "..." << std::endl;
-			calib = TargetDatabase::LoadCalibration(calibpath);
+			 calib = TargetDatabase::LoadCalibration(calibpath);
 		} else {
 			std::cout << "[ERROR] Calibration file at " << calibpath << " not found!" << std::endl;
 			std::cout << "[ERROR] Using no calibration" << std::endl;
@@ -91,11 +91,14 @@ int main(int argc, char** argv) {
 
 		std::string x_galvo_path = std::string("C:\\Users\\tardigrade\\SLM\\fastslm_working\\fastslm\\feedback\\x_galvo.txt");
 		std::string y_galvo_path = std::string("C:\\Users\\tardigrade\\SLM\\fastslm_working\\fastslm\\feedback\\y_galvo.txt");
+		std::cout << "[DEBUG] Loading spiral waveforms from " << x_galvo_path << " and " << y_galvo_path << "..." << std::endl;
 		
 		std::string x_center_path = std::string("C:\\Users\\tardigrade\\SLM\\fastslm_working\\fastslm\\feedback\\x_center.txt");
 		std::string y_center_path = std::string("C:\\Users\\tardigrade\\SLM\\fastslm_working\\fastslm\\feedback\\y_center.txt");
+		std::cout << "[DEBUG] Loading center waveforms from " << x_center_path << " and " << y_center_path << "..." << std::endl;
 
 		std::string vignetting_path = std::string("C:\\Users\\tardigrade\\SLM\\SLM\\vignettingmap_cal.png");
+		std::cout << "[DEBUG] Loading vignetting mask from " << vignetting_path << "..." << std::endl;
 
 		controller.LoadGalvoWaveforms(x_galvo_path, y_galvo_path);
 		controller.LoadCenterWaveforms(x_center_path, y_center_path);
@@ -147,7 +150,7 @@ int main(int argc, char** argv) {
 		//controller.DebugInitCells();
 		//controller.DebugGenRandomPattern();
 		//controller.DebugSingleCell(0.0f);
-		//controller.DebugCalibPattern();
+		controller.DebugCalibPattern();
 
 		// initialize asych IO
 		nh.Connect("127.0.0.1", 9091);
