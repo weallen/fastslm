@@ -9,6 +9,8 @@
 #include <math.h>
 #include <arrayfire.h>
 
+#include <glfw3.h>
+
 #include <gl/GL.h>
 #include <gl/GLU.h>
 
@@ -26,6 +28,11 @@ typedef struct {
 } Pixel;
 
 using namespace af;
+
+static void window_focus_callback(GLFWwindow* window, int focused);
+static void window_iconify_callback(GLFWwindow* window, int iconified);
+
+GLFWwindow* InitializeMonitor(int monitor_width, int monitor_height, bool fullscreen);
 
 // creates a blank RGB image in RGA format ... allocates memory so don't forget to delete
 Pixel* MakeRGBImage(const int M, const int N);

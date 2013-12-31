@@ -102,13 +102,13 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(AF_PATH)\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include;..\..\include;C:\Users\tardigrade\SLM\fastslm\glfw\include\GLFW;C:\Users\tardigrade\SLM\fastslm\libzmq\include;C:\Program Files (x86)\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(AF_PATH)\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include;..\..\include;$(ProjectDir)\..\..\extern\glfw\include\GLFW;$(ProjectDir)\..\..\extern\libzmq\include;C:\Program Files (x86)\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\..\lib64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\lib\x64;$(AF_PATH)\lib64;C:\Users\tardigrade\SLM\fastslm\glfw\lib-msvc110;C:\Users\tardigrade\SLM\fastslm\libzmq\bin\x64;C:\Users\tardigrade\SLM\fastslm\libzmq\lib\x64;$(ProgramFiles)\National Instruments\Shared\ExternalCompilerSupport\C\lib64\msvc</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\lib64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\lib\x64;$(AF_PATH)\lib64;$(ProjectDir)\..\..\extern\glfw\lib-msvc110;$(ProjectDir)\..\..\extern\libzmq\bin\x64;$(ProjectDir)\..\..\extern\libzmq\lib\x64;$(ProgramFiles)\National Instruments\Shared\ExternalCompilerSupport\C\lib64\msvc</AdditionalLibraryDirectories>
       <AdditionalDependencies>cuda.lib;cudart.lib;libafcu.lib;opengl32.lib;glfw3.lib;libzmq.lib;NIDAQmx.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -142,7 +142,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(AF_PATH)\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include;..\..\include;C:\Users\tardigrade\SLM\fastslm\glfw\include\GLFW;C:\Users\tardigrade\SLM\fastslm\libzmq\include;C:\Program Files (x86)\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(AF_PATH)\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include;..\..\include;$(ProjectDir)\..\..\extern\glfw\include\GLFW;$(ProjectDir)\..\..\extern\libzmq\include;C:\Program Files (x86)\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -150,7 +150,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>..\..\lib64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\lib\x64;$(AF_PATH)\lib64;C:\Users\tardigrade\SLM\fastslm\glfw\lib-msvc110;C:\Users\tardigrade\SLM\fastslm\libzmq\bin\x64;C:\Users\tardigrade\SLM\fastslm\libzmq\lib\x64;$(ProgramFiles)\National Instruments\Shared\ExternalCompilerSupport\C\lib64\msvc</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\lib64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\lib\x64;$(AF_PATH)\lib64;$(ProjectDir)\..\..\extern\glfw\lib-msvc110;$(ProjectDir)\..\..\extern\libzmq\bin\x64;$(ProjectDir)\..\..\extern\libzmq\lib\x64;$(ProgramFiles)\National Instruments\Shared\ExternalCompilerSupport\C\lib64\msvc</AdditionalLibraryDirectories>
       <AdditionalDependencies>cuda.lib;cudart.lib;libafcu.lib;opengl32.lib;glfw3.lib;libzmq.lib;NIDAQmx.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

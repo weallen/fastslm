@@ -33,6 +33,9 @@ void SLMControl::Initialize(int* lut, concurrency::concurrent_queue<std::string>
 	retrieved_phase_ = array(M_, N_);
 	shifted_phase_ = array(M_, N_);
 	current_mask_ = MakeRGBImage(M_, N_); // intialize
+		
+	vignetting_ = af::constant(1.0, M_, N_);
+
 	calib_ = calib;
 	td_.SetCalibration(calib_);
 

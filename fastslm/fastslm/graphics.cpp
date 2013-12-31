@@ -1,5 +1,55 @@
 #include "graphics.h"
 
+static void window_focus_callback(GLFWwindow* window, int focused) {
+}
+
+static void window_iconify_callback(GLFWwindow* window, int iconified)
+{
+}
+
+GLFWwindow* InitializeMonitor(int monitor_width, int monitor_height, bool fullscreen) {
+
+	// Initialize OpenGL display
+	std::cout << "[DEBUG] Initializing graphics..." << std::endl;
+	GLFWwindow* window;
+	if (!glfwInit()) {
+		exit(EXIT_FAILURE);
+	}
+
+	// try to find the SLM monitor
+	
+	int count;
+	GLFWmonitor** monitors = glfwGetMonitors(&count);
+	int slm_monitor = -1; // by default, -1
+	for (int i = 0; i < count; ++i) {
+		const GLFWvidmode* mode = glfwGetVideoMode(monitors[i]);
+		if (mode->width == monitor_width && mode->height == monitor_height) {
+			slm_monitor = i;
+		}
+	}
+
+	// if found the SLM monitor
+	if (slm_monitor > 0) {
+		// this is kind of a hack because GLFW doesn't support fullscreen on multiple monitors
+		// in the current version of GLFW, taking the focus off the fullscreen window minimizes it
+		// instead, we're creating a window without decorations and positioning it over the 1024x768 SLM monitor 
+		// that we're assuming is to the right of the primary monitor
+		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+		glfwWindowHint(GLFW_DECORATED, GL_FALSE);
+		window = glfwCreateWindow(monitor_width, monitor_height, "Display", NULL, NULL);
+		// put window on other screen (assuming smaller monitor is to right of larger monitor)
+		glfwSetWindowPos(window, mode->width, 0);
+
+	} else { // otherwise create a window
+		window = glfwCreateWindow(monitor_width, monitor_height, "Display", NULL, NULL);
+	}
+	glfwSetWindowFocusCallback(window, &window_focus_callback);
+	glfwSetWindowIconifyCallback(window, &window_iconify_callback);
+	
+	return window;
+}
+
 void DisplayMask(const array& mask) {
 }
 

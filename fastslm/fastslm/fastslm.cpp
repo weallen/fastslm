@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
 		int Z = 10;
 		
 		// Load lookup table and make buffer for image
-		std::string lutpath = std::string("C:\\Users\\tardigrade\\SLM\\SLM\\SLM2047.lut");
+		std::string lutpath = std::string("C:\\Users\\user\\SLM\\SLM\\SLM2047.lut");
 		//std::string lutpath = std::string("C:\\Users\\Admin\\Desktop\\slmscope\\SLM\\SLM2047.lut");
 
 		std::ifstream lutfile(lutpath);
@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
 			exit(-1);
 		}
 
-		std::string calibpath = std::string("C:\\Users\\tardigrade\\SLM\\SLM\\cal.txt");
+		std::string calibpath = std::string("C:\\Users\\user\\SLM\\SLM\\cal.txt");
 		//std::string calibpath = std::string("C:\\Users\\Admin\\Desktop\\slmscope\\SLM\\cal.txt");
 		std::ifstream calibfile(calibpath);
 		
@@ -89,51 +89,35 @@ int main(int argc, char** argv) {
 		std::cout << "[DEBUG] Initializing controller..." << std::endl;
 		controller.Initialize(lut, queue, calib);
 
-		std::string x_galvo_path = std::string("C:\\Users\\tardigrade\\SLM\\fastslm_working\\fastslm\\feedback\\x_galvo.txt");
-		std::string y_galvo_path = std::string("C:\\Users\\tardigrade\\SLM\\fastslm_working\\fastslm\\feedback\\y_galvo.txt");
+		std::string x_galvo_path = std::string("C:\\Users\\user\\SLM\\fastslm\\feedback\\x_galvo.txt");
+		std::string y_galvo_path = std::string("C:\\Users\\user\\SLM\\fastslm\\feedback\\y_galvo.txt");
 		std::cout << "[DEBUG] Loading spiral waveforms from " << x_galvo_path << " and " << y_galvo_path << "..." << std::endl;
 		
-		std::string x_center_path = std::string("C:\\Users\\tardigrade\\SLM\\fastslm_working\\fastslm\\feedback\\x_center.txt");
-		std::string y_center_path = std::string("C:\\Users\\tardigrade\\SLM\\fastslm_working\\fastslm\\feedback\\y_center.txt");
+		std::string x_center_path = std::string("C:\\Users\\user\\SLM\\fastslm\\feedback\\x_center.txt");
+		std::string y_center_path = std::string("C:\\Users\\user\\SLM\\fastslm\\feedback\\y_center.txt");
 		std::cout << "[DEBUG] Loading center waveforms from " << x_center_path << " and " << y_center_path << "..." << std::endl;
 
-		std::string vignetting_path = std::string("C:\\Users\\tardigrade\\SLM\\SLM\\vignettingmap_cal.png");
+		std::string vignetting_path = std::string("C:\\Users\\user\\SLM\\SLM\\vignettingmap_cal.png");
 		std::cout << "[DEBUG] Loading vignetting mask from " << vignetting_path << "..." << std::endl;
 
 		controller.LoadGalvoWaveforms(x_galvo_path, y_galvo_path);
 		controller.LoadCenterWaveforms(x_center_path, y_center_path);
-		controller.LoadVignettingCorrectionMap(vignetting_path);
-
-		// Initialize OpenGL display
-		std::cout << "[DEBUG] Initializing graphics..." << std::endl;
-		GLFWwindow* window;
-		if (!glfwInit()) {
-			exit(EXIT_FAILURE);
+		
+		std::ifstream vignetting(vignetting_path);
+		if (vignetting) {
+			controller.LoadVignettingCorrectionMap(vignetting_path);
+		} else {
+			std::cout << "[ERROR] No vignetting correction file found!" << std::endl;
 		}
 
-		//window = glfwCreateWindow(M, N, "Display", NULL, NULL);
-		// make fullscreen
-		int count;
-		GLFWmonitor** monitors = glfwGetMonitors(&count);
+		bool fullscreen = true;
 		int monitor_width = 1024;
 		int monitor_height = 768;
-		
-		/*
-		int widthMM, heightMM;
-		glfwGetMonitorPhysicalSize(monitors[0], &widthMM, &heightMM);
 
-		if (count > 1) {
-			if (widthMM == monitor_width && heightMM == monitor_height) {
-				window = glfwCreateWindow(widthMM, heightMM, "Display", monitors[0], NULL);
-			}
-			else {
-				window = glfwCreateWindow(widthMM, heightMM, "Display", monitors[1], NULL);
-			}
-		} else {
-		}*/
+		GLFWwindow* window = InitializeMonitor(monitor_width, monitor_height, fullscreen);
 
 		//window = glfwCreateWindow(monitor_width, monitor_height, "Display", glfwGetPrimaryMonitor(), NULL);
-		window = glfwCreateWindow(monitor_width, monitor_height, "Display", NULL, NULL);
+		//window = glfwCreateWindow(monitor_width, monitor_height, "Display", NULL, NULL);
 
 		if (!window) {
 			glfwTerminate();
