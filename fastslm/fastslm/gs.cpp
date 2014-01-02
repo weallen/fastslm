@@ -12,26 +12,25 @@
 void Hologram::GS(const array& Fu, const array& fx, array& retrieved_phase /*, array& estimate*/) {
 	array z_planes = seq(Z_);
 
-	array z_pos_device = (linspace(minZ_, maxZ_, Z_) * zres_ + const_z_offset_)/z_fudge_factor;
-	float* z_pos = z_pos_device.host<float>();
-
-	int target_z = z_planes(0).scalar<int>();	
+	array z_pos = (linspace(minZ_, maxZ_, Z_) * zres_ + const_z_offset_)/z_fudge_factor;
+	
+	array target_z = z_planes(0);
 
 	int Z = Fu.dims(2);
 	array target_arr = Fu(span, span, 0);
 	array gp = exp(fx);
 	array g = abs(fx) * exp(af::i * fx);
-	array G = ForwardLensPropagation(g, z_pos[target_z]);
+	array G = ForwardLensPropagation(g, z_pos(target_z));
 	array Gp;
 	array temp(Fu.dims(), c32);
 	for (int i = 0; i < num_iter_; ++i) {
 		g = abs(fx) * exp(af::i * arg(gp));
-		gfor(array z, Z) {
-			target_z = z_planes(z).scalar<int>();
-			float curr_zpos = z_pos[target_z];
-			G = ForwardLensPropagation(g, curr_zpos);
-			Gp = abs(Fu(span, span, z)) * exp(af::i * arg(G));
-			temp(span, span, z) = BackwardLensPropagation(Gp, curr_zpos);
+		gfor(array z, Z) { // XXX for some reason doing this in parallel doesn't work
+		//for (int z = 0; z < Z_; ++z) {
+			array curr_zpos = local(z_pos(z_planes(z)));
+			array G_local = local(ForwardLensPropagation(g, curr_zpos));
+			array Gp_local = local(abs(Fu(span, span, z)) * exp(af::i * arg(G_local)));
+			temp(span, span, z) = BackwardLensPropagation(Gp_local, curr_zpos);
 		}
 		gp = sum(temp, 2);
 	}
@@ -43,11 +42,10 @@ void Hologram::GS(const array& Fu, const array& fx, array& retrieved_phase /*, a
 	//	G = ForwardLensPropagation(g, target_z);
 	//	estimate(span, span, z) = abs(G);
 	//}
-	array::free(z_pos);
 	retrieved_phase = arg(g) + af::Pi;
 }
 
-array Hologram::ForwardLensPropagation(const array& incidentField, const float z) {
+array Hologram::ForwardLensPropagation(const array& incidentField, const array& z) {
 #ifdef USE_SHIFT
 	array propagatedField = fftshift(fft2(fftshift(incidentField)));
 #else
@@ -56,7 +54,7 @@ array Hologram::ForwardLensPropagation(const array& incidentField, const float z
 	return PropTF(propagatedField, z);
 }
 
-array Hologram::BackwardLensPropagation(const array& incidentField, const float z) {
+array Hologram::BackwardLensPropagation(const array& incidentField, const array& z) {
 	array propagatedField = PropTF(incidentField, -z);
 #ifdef USE_SHIFT
 	return ifftshift(ifft2(ifftshift(propagatedField)));
@@ -65,7 +63,7 @@ array Hologram::BackwardLensPropagation(const array& incidentField, const float 
 #endif
 }
 
-array Hologram::PropTF(const array& u1, const float z) {
+array Hologram::PropTF(const array& u1, const array& z) {
 	float dx = L_/(float)M_;
 	float k = 2*af::Pi/wavelength_;
 

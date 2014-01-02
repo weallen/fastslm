@@ -56,10 +56,10 @@ private:
 		MakeShiftMatrix();
 	}
 
-	array ForwardLensPropagation(const array& incidentField, const float z);
-	array BackwardLensPropagation(const array& incidentField, const float z);
+	array ForwardLensPropagation(const array& incidentField, const array& z);
+	array BackwardLensPropagation(const array& incidentField, const array& z);
 
-	array PropTF(const array& u1, const float z);
+	array PropTF(const array& u1, const array& z);
 
 	// XXX NOT WORKING RIGHT NOW DO NOT USE
 	array PropTFPrecomputed(const array& u1, const int z);

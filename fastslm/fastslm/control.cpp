@@ -92,7 +92,7 @@ void SLMControl::Update() {
 	// try to get current command to update state
 	GetCurrentCommands();
 
-	//DebugGenRandomPattern();
+	DebugGenRandomPattern();
 
 	// Run GS
 	if (compute_gs_) {
@@ -174,16 +174,16 @@ void SLMControl::DebugInitCells() {
 	toks.push_back("RESET");
 	toks.push_back("512");
 	toks.push_back("512");
-	toks.push_back("10");
+	toks.push_back("50");
 	toks.push_back("0.00001");
 	toks.push_back("0");
-	toks.push_back("9");
+	toks.push_back("49");
 
 	Reset(toks);
 	for (int i = 0; i < 1000; ++i) {
 		float x = (rand() % 512)/512.0;
 		float y = (rand() % 512)/512.0;
-		float z = (rand() % 10);
+		float z = (rand() % 50);
 		z = 0;
 		td_.AddTarget(Position(x,y,z));
 	}
@@ -233,7 +233,6 @@ void SLMControl::LoadCells(const std::vector<std::string>& toks) {
 		x = atof(toks[2+i].c_str());
 		y = 1.0 - atof(toks[2+i+1].c_str()); // !!!! NOTE THAT THIS is y = 1 - y to compensate for image flip
 		z = atof(toks[2+i+2].c_str());
-		z = 4.1E-5;
 		if (x <= 1.0 && y <= 1.0) {
 			td_.AddTarget(Position(x, y, z));
 		} else {
@@ -311,7 +310,7 @@ void SLMControl::Reset(const std::vector<std::string>& toks) {
 	M_ = atoi(toks[1].c_str());
 	N_ = atoi(toks[2].c_str());
 	Z_ = atoi(toks[3].c_str());
-	Zres_ = atof(toks[4].c_str())/z_fudge_factor_;
+	Zres_ = atof(toks[4].c_str());
 	minZ_ = atof(toks[5].c_str());
 	maxZ_ = atof(toks[6].c_str());
 

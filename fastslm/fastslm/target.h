@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <set>
 #include <limits>
 #include <arrayfire.h>
 

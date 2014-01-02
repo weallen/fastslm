@@ -26,23 +26,32 @@ af::array TargetDatabase::GenerateTargetImage(const std::vector<int>& curr_targe
 	af::array x = target_image(af::span, af::span, 0).copy();
 	af::saveimage("C:\\Users\\tardigrade\\SLM\\testimg.png", x/255.0);
 	return target_image;*/
-	af::array target_image = af::constant(0, M_, N_);
-	int xpos, ypos, idx;
+	af::array target_image = af::constant(0, M_, N_, Z_);
+	int xpos, ypos, zpos, idx;
+	std::set<int> used_zplanes; // z planes that actually have spots in them
 	for (int i = 0; i < curr_targets.size(); ++i) {
 		idx = curr_targets[i];
 		xpos = std::min<int>(floor(targets_[idx].x * (M_ - 1)), M_ - 1);
 		ypos = std::min<int>(floor(targets_[idx].y * (N_ - 1)), N_ - 1);
-		target_image(xpos, ypos) = 1.0;//std::numeric_limits<float>::max();
+		zpos = floor(targets_[idx].z);
+		target_image(xpos, ypos, zpos) = 1.0;//std::numeric_limits<float>::max();
+		used_zplanes.insert(zpos);
 	}
 	float max_val; int max_idx;
-
-	af::array corrected_image = target_image / vignetting_;
-	af::max<float>(&max_val, &max_idx, corrected_image);
-	corrected_image /= max_val;
-	corrected_image *= 255.0;
+	
+	for (int z = 0; z < Z_; ++z) {
+		if (used_zplanes.find(z) != used_zplanes.end()) {
+			af::array corrected_image = target_image(af::span, af::span, z) / vignetting_;
+			af::max<float>(&max_val, &max_idx, corrected_image);
+			corrected_image /= max_val;
+			corrected_image *= 255.0;
+			// NOTE NO VIGNETTING CORRECTION RIGHT NOW
+			target_image(af::span, af::span, z) = corrected_image; // XXX Causes an underflow error on z sections without any poitns
+		}
+	}
 	//std::cout << min_val << " " << max_val << std::endl;
 	//af::saveimage("C:\\Users\\tardigrade\\SLM\\testimg.png", corrected_image/max_val);
-	return corrected_image;
+	return target_image;
 	
 }
 
