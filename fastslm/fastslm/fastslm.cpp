@@ -9,8 +9,8 @@
 
 #include <arrayfire.h>
 
+#include <GL/glew.h>
 #include <glfw3.h>
-#include <gl/GLU.h>
 
 #include "gs.h"
 #include "graphics.h"
@@ -115,9 +115,6 @@ int main(int argc, char** argv) {
 		int monitor_height = 768;
 
 		GLFWwindow* window = InitializeMonitor(monitor_width, monitor_height, fullscreen);
-
-		//window = glfwCreateWindow(monitor_width, monitor_height, "Display", glfwGetPrimaryMonitor(), NULL);
-		//window = glfwCreateWindow(monitor_width, monitor_height, "Display", NULL, NULL);
 
 		if (!window) {
 			glfwTerminate();

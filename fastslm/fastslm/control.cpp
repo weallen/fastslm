@@ -168,6 +168,7 @@ void SLMControl::DebugCalibPattern() {
 	compute_gs_ = true;
 }
 
+
 void SLMControl::DebugInitCells() {
 	std::vector<std::string> toks;
 	toks.push_back("RESET");

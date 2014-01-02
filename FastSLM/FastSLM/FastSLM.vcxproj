@@ -52,6 +52,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 5.5.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -102,14 +103,14 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(AF_PATH)\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include;..\..\include;$(ProjectDir)\..\..\extern\glfw\include\GLFW;$(ProjectDir)\..\..\extern\libzmq\include;C:\Program Files (x86)\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(AF_PATH)\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include;..\..\include;$(ProjectDir)\..\..\extern\glfw\include\GLFW;$(ProjectDir)\..\..\extern\glew\include;$(ProjectDir)\..\..\extern\libzmq\include;C:\Program Files (x86)\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\..\lib64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\lib\x64;$(AF_PATH)\lib64;$(ProjectDir)\..\..\extern\glfw\lib-msvc110;$(ProjectDir)\..\..\extern\libzmq\bin\x64;$(ProjectDir)\..\..\extern\libzmq\lib\x64;$(ProgramFiles)\National Instruments\Shared\ExternalCompilerSupport\C\lib64\msvc</AdditionalLibraryDirectories>
-      <AdditionalDependencies>cuda.lib;cudart.lib;libafcu.lib;opengl32.lib;glfw3.lib;libzmq.lib;NIDAQmx.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\lib64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\lib\x64;$(AF_PATH)\lib64;$(ProjectDir)\..\..\extern\glfw\lib-msvc110;$(ProjectDir)\..\..\extern\libzmq\bin\x64;$(ProjectDir)\..\..\extern\glew\lib\Release\x64;$(ProjectDir)\..\..\extern\libzmq\lib\x64;$(ProgramFiles)\National Instruments\Shared\ExternalCompilerSupport\C\lib64\msvc</AdditionalLibraryDirectories>
+      <AdditionalDependencies>cuda.lib;cudart.lib;libafcu.lib;opengl32.lib;glfw3.lib;libzmq.lib;NIDAQmx.lib;glew32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -142,7 +143,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(AF_PATH)\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include;..\..\include;$(ProjectDir)\..\..\extern\glfw\include\GLFW;$(ProjectDir)\..\..\extern\libzmq\include;C:\Program Files (x86)\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(AF_PATH)\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\include;..\..\include;$(ProjectDir)\..\..\extern\glfw\include\GLFW;$(ProjectDir)\..\..\extern\glew\include;$(ProjectDir)\..\..\extern\libzmq\include;C:\Program Files (x86)\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -150,8 +151,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>..\..\lib64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\lib\x64;$(AF_PATH)\lib64;$(ProjectDir)\..\..\extern\glfw\lib-msvc110;$(ProjectDir)\..\..\extern\libzmq\bin\x64;$(ProjectDir)\..\..\extern\libzmq\lib\x64;$(ProgramFiles)\National Instruments\Shared\ExternalCompilerSupport\C\lib64\msvc</AdditionalLibraryDirectories>
-      <AdditionalDependencies>cuda.lib;cudart.lib;libafcu.lib;opengl32.lib;glfw3.lib;libzmq.lib;NIDAQmx.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\lib64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.5\lib\x64;$(AF_PATH)\lib64;$(ProjectDir)\..\..\extern\glfw\lib-msvc110;$(ProjectDir)\..\..\extern\libzmq\bin\x64;$(ProjectDir)\..\..\extern\glew\lib\Release\x64;$(ProjectDir)\..\..\extern\libzmq\lib\x64;$(ProgramFiles)\National Instruments\Shared\ExternalCompilerSupport\C\lib64\msvc</AdditionalLibraryDirectories>
+      <AdditionalDependencies>cuda.lib;cudart.lib;libafcu.lib;opengl32.lib;glfw3.lib;libzmq.lib;NIDAQmx.lib;glew32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -160,8 +161,10 @@
   <ItemGroup>
     <ClInclude Include="common.h" />
     <ClInclude Include="control.h" />
+    <ClInclude Include="cudalut.h" />
     <ClInclude Include="graphics.h" />
     <ClInclude Include="gs.h" />
+    <ClInclude Include="helper_cuda.h" />
     <ClInclude Include="stimulator.h" />
     <ClInclude Include="network.h" />
     <ClInclude Include="stdafx.h" />
@@ -186,7 +189,14 @@
     <ClCompile Include="target.cpp" />
     <ClCompile Include="waveoptics.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="cudalut.cu">
+      <FileType>Document</FileType>
+      <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
+    </CudaCompile>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 5.5.targets" />
   </ImportGroup>
 </Project>

@@ -9,6 +9,8 @@ static void window_iconify_callback(GLFWwindow* window, int iconified)
 
 GLFWwindow* InitializeMonitor(int monitor_width, int monitor_height, bool fullscreen) {
 
+	glewInit();
+
 	// Initialize OpenGL display
 	std::cout << "[DEBUG] Initializing graphics..." << std::endl;
 	GLFWwindow* window;
@@ -50,7 +52,149 @@ GLFWwindow* InitializeMonitor(int monitor_width, int monitor_height, bool fullsc
 	return window;
 }
 
-void DisplayMask(const array& mask) {
+
+void SLMDisplay_CUDA::InitGraphics(int M, int N, int width, int height) {
+	cudaGLSetGLDevice(0); // assumes only 1 graphics card
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glEnable(GL_TEXTURE_2D);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, width, height, 0, 0, 1);
+	glMatrixMode(GL_MODELVIEW);
+	MakeTexture(M, N);
+}
+
+void SLMDisplay_CUDA::DisplayMask(af::array& mask) {
+	float* mask_device = mask.device<float>();
+	unsigned int* out_data;
+	cudaArray* texture_ptr;
+	size_t num_bytes;
+	checkCudaErrors(cudaGraphicsMapResources(1, &cuda_resource_buffer_, 0));
+	checkCudaErrors(cudaGraphicsResourceGetMappedPointer((void**)&out_data, &num_bytes, cuda_resource_buffer_));
+
+	launch_cudaLut(mask_device, out_data, 512, 512);
+
+	checkCudaErrors(cudaGraphicsUnmapResources(1, &cuda_resource_buffer_, 0));
+
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, buffer_);
+
+    glBindTexture(GL_TEXTURE_2D, texture_);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+                    512, 512,
+                    GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+
+	DrawTexture(512, 512);
+}
+
+void SLMDisplay_CUDA::CompileShader() {
+	GLuint v, f = 0;
+	shader_ = glCreateProgram();
+
+	f = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(f, 1, &glsl_shader, NULL);
+	glCompileShader(f);
+	GLint compiled = 0;
+	glGetShaderiv(f, GL_COMPILE_STATUS, &compiled);
+	if (!compiled)
+        {
+            //#ifdef NV_REPORT_COMPILE_ERRORS
+            char temp[256] = "";
+            glGetShaderInfoLog(f, 256, NULL, temp);
+            printf("frag Compile failed:\n%s\n", temp);
+            //#endif
+            glDeleteShader(f);
+        }
+        else
+        {
+            glAttachShader(shader_,f);
+        }
+
+    glLinkProgram(shader_);
+
+    int infologLength = 0;
+    int charsWritten  = 0;
+
+    glGetProgramiv(shader_, GL_INFO_LOG_LENGTH, (GLint *)&infologLength);
+
+    if (infologLength > 0)
+    {
+        char *infoLog = (char *)malloc(infologLength);
+        glGetProgramInfoLog(shader_, infologLength, (GLsizei *)&charsWritten, infoLog);
+        printf("Shader compilation error: %s\n", infoLog);
+        free(infoLog);
+    }
+}
+
+void SLMDisplay_CUDA::DrawTexture(const int M, const int N) {
+    glBindTexture(GL_TEXTURE_2D, texture_);
+
+    glEnable(GL_TEXTURE_2D);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_LIGHTING);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    glViewport(0, 0, M, N);
+
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0, 0.0);
+    glVertex3f(-1.0, -1.0, 0.5);
+    glTexCoord2f(1.0, 0.0);
+    glVertex3f(1.0, -1.0, 0.5);
+    glTexCoord2f(1.0, 1.0);
+    glVertex3f(1.0, 1.0, 0.5);
+    glTexCoord2f(0.0, 1.0);
+    glVertex3f(-1.0, 1.0, 0.5);
+    glEnd();
+
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+
+    glDisable(GL_TEXTURE_2D);
+}
+
+void SLMDisplay_CUDA::MakeTexture(int M, int N) {
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	// create texture
+	glGenTextures(1, &texture_);
+	glBindTexture(GL_TEXTURE_2D, texture_);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	// Create texture data (4-component unsigned byte)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, M, N, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+	// map GL texturew with CUDA resource
+	//checkCudaErrors(cudaGraphicsGLRegisterImage(&cuda_resource_tex_, texture_, GL_TEXTURE_2D, cudaGraphicsRegisterFlagsNone));
+
+	// Unbind the texture
+	//glBindTexture( GL_TEXTURE_2D, 0 );
+
+
+	// allocate render target of CUDA
+	int num_texels = M * N;
+	int num_values = num_texels * 4;
+	int size_tex_data = sizeof(GLubyte) * num_values;
+	void* data = (int*)malloc(size_tex_data);
+	glGenBuffers(1, &buffer_);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer_);
+	glBufferData(GL_ARRAY_BUFFER, size_tex_data, data, GL_DYNAMIC_DRAW);
+	free(data);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	checkCudaErrors(cudaGraphicsGLRegisterBuffer(&cuda_resource_buffer_, buffer_, cudaGraphicsMapFlagsNone));
 }
 
 
