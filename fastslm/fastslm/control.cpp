@@ -92,7 +92,7 @@ void SLMControl::Update() {
 	// try to get current command to update state
 	GetCurrentCommands();
 
-	DebugGenRandomPattern();
+	//DebugGenRandomPattern();
 
 	// Run GS
 	if (compute_gs_) {

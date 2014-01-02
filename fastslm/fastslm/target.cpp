@@ -45,7 +45,6 @@ af::array TargetDatabase::GenerateTargetImage(const std::vector<int>& curr_targe
 			af::max<float>(&max_val, &max_idx, corrected_image);
 			corrected_image /= max_val;
 			corrected_image *= 255.0;
-			// NOTE NO VIGNETTING CORRECTION RIGHT NOW
 			target_image(af::span, af::span, z) = corrected_image; // XXX Causes an underflow error on z sections without any poitns
 		}
 	}

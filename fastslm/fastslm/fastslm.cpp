@@ -128,7 +128,7 @@ int main(int argc, char** argv) {
 		display.InitGraphics(M, N, monitor_width, monitor_height);
 
 		// debug stuff
-		controller.DebugInitCells();
+		//controller.DebugInitCells();
 		//controller.DebugGenRandomPattern();
 		//controller.DebugSingleCell(0.0f);
 		//controller.DebugCalibPattern();
