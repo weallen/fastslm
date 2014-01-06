@@ -15,7 +15,8 @@ const float z_fudge_factor = 4.0;
 
 // constant z offset to compensate for improperly aligned optics
 // XXX THIS IS HACK -- SHOULD BE A PARAMETER
-const float const_z_offset_ = 53E-6; 
+//const float const_z_offset_ = 53E-6; 
+const float const_z_offset_ = 0;
 
 /*
  * NOTE: To specify Z-planes, give GS the number of Z planes, min Z, max Z (integers), and Z spacing (float)
@@ -26,14 +27,14 @@ class Hologram {
 public:
 	// default has 10 um spacing
 	Hologram() 
-		: wavelength_(1064), L_(10.0), num_iter_(1), zres_(0.00001) 
+		: wavelength_(1064), L_(10.0), num_iter_(10), zres_(0.00001) 
 		, minZ_(0), maxZ_(9), M_(512), N_(512), Z_(10)
 	{
 		Initialize();
 	}
 
 	Hologram(int M, int N, int Z, float minZ, float maxZ, float zres) 
-		: wavelength_(1064), L_(10.0), num_iter_(1), zres_(zres)
+		: wavelength_(1064), L_(10.0), num_iter_(10), zres_(zres)
 		, minZ_(minZ), maxZ_(maxZ), M_(M), N_(N), Z_(Z)
 	{
 		Initialize();
@@ -49,6 +50,9 @@ public:
 	//		 Increased offsetX moves down in real coordinates
 	//		 THIS IS BACKWARDS AND NEGATIVE FROM WHAT YOU WOULD EXPECT!
 	void ApplyShift(const float offsetX, const float offsetY, const array& phasemask, array& shifted_phasemask);
+
+	// apply additional phasemask
+	void ApplyPhase(const array& ext_phase, array& phase);
 
 private:
 	void Initialize() {

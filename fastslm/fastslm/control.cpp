@@ -30,10 +30,11 @@ void SLMControl::Initialize(int* lut, concurrency::concurrent_queue<std::string>
 	lut_ = lut;
 	cmd_queue_ = q;
 	source_ = af::randn(M_, N_); 
-	retrieved_phase_ = array(M_, N_);
-	shifted_phase_ = array(M_, N_);
+	retrieved_phase_ = af::constant(0.0, M_, N_);
+	shifted_phase_ = af::constant(0.0, M_, N_);
 	current_mask_ = MakeRGBImage(M_, N_); // intialize
-		
+	
+	external_phasemask_ = af::constant(0.0, M_, N_);
 	vignetting_ = af::constant(1.0, M_, N_);
 
 	calib_ = calib;
@@ -63,6 +64,7 @@ void SLMControl::Initialize(int* lut, concurrency::concurrent_queue<std::string>
 	RegisterCommandCallback("PULSE_STOP",	&SLMControl::PulseStop);
 	RegisterCommandCallback("SPIRAL_START", &SLMControl::SpiralStart);
 	RegisterCommandCallback("SPIRAL_STOP",	&SLMControl::SpiralStop);
+	RegisterCommandCallback("LOAD_PHASE",	&SLMControl::LoadPhase);
 }
 
 void SLMControl::LoadGalvoWaveforms(const std::string& x_path, const std::string& y_path) {
@@ -105,6 +107,11 @@ void SLMControl::Update() {
 	// apply shift
 	if (apply_shift_) {
 		h_.ApplyShift(offsetX_, offsetY_, retrieved_phase_, shifted_phase_);
+		// add externally loaded phasemask
+		if (ext_phase_loaded_) {
+			h_.ApplyPhase(external_phasemask_, shifted_phase_);
+		}
+		// apply LUT to make image to display
 		ProcessLUT(shifted_phase_, lut_, current_mask_);
 		apply_shift_ = false;
 	}
@@ -322,7 +329,7 @@ void SLMControl::Reset(const std::vector<std::string>& toks) {
 	if (current_mask_ != NULL) {
 		delete[] current_mask_;
 	}
-
+	retrieved_phase_ = af::constant(0.0, M_, N_);
 	current_mask_ = MakeRGBImage(M_, N_); // intialize
 
 	offsetX_ = 0;
@@ -331,6 +338,8 @@ void SLMControl::Reset(const std::vector<std::string>& toks) {
 	compute_gs_ = false;
 	cells_loaded_ = false;
 	apply_shift_ = false;
+	ext_phase_loaded_ = false;
+	external_phasemask_ = af::constant(0.0, M_, N_);
 }
 
 void SLMControl::PulseSet(const std::vector<std::string>& toks) {
@@ -371,5 +380,20 @@ void SLMControl::SpiralStart(const std::vector<std::string>& toks) {
 void SLMControl::SpiralStop(const std::vector<std::string>& toks) {
 	if (spiral_.IsRunning()) {
 		spiral_.Stop();
+	}
+}
+
+void SLMControl::LoadPhase(const std::vector<std::string>& toks) {
+	if (toks.size() != 2) {
+		std::cout << "[ERROR] Load phase command is too long -- check for extra spaces!" << std::endl;
+	}
+	std::string path = toks[1];
+	std::ifstream file(path);
+	if (file) {
+		external_phasemask_ = (af::loadimage(path.c_str(), false).asfloat() / 255.0) * 2 * af::Pi;
+		ext_phase_loaded_ = true;
+		apply_shift_ = true;
+	} else {
+		std::cout << "[ERROR] Phase mask file not found at " << path << "!" << std::endl;
 	}
 }

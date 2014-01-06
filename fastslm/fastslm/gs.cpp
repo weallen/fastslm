@@ -146,3 +146,9 @@ void Hologram::ApplyShift(const float offsetX, const float offsetY, const array&
 	shifted_phasemask = phasemask + (shiftX_ * offsetX + shiftY_ * tempY) * c;
 	shifted_phasemask = shifted_phasemask - af::floor(shifted_phasemask / modfact) * modfact; // modulus modfact
 }
+
+void Hologram::ApplyPhase(const array& ext_phase, array& phase) {
+	float modfact = 2 * 3.14159;
+	phase += ext_phase;
+	phase = phase - af::floor(phase / modfact) * modfact;
+}

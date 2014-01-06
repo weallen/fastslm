@@ -49,7 +49,8 @@ int main(int argc, char** argv) {
 		int Z = 10;
 		
 		// Load lookup table and make buffer for image
-		std::string lutpath = std::string("C:\\Users\\user\\SLM\\SLM\\SLM2047.lut");
+		//std::string lutpath = std::string("C:\\Users\\user\\SLM\\SLM\\SLM2047.lut");
+		std::string lutpath = std::string("C:\\Users\\user\\SLM\\SLM\\SLM2831.lut");
 		//std::string lutpath = std::string("C:\\Users\\Admin\\Desktop\\slmscope\\SLM\\SLM2047.lut");
 
 		std::ifstream lutfile(lutpath);
@@ -147,7 +148,6 @@ int main(int argc, char** argv) {
 
 			controller.Update();
 			buffer = controller.CurrentMask();
-
 			display.DisplayMask(buffer, M, N);
 
 			glfwSwapBuffers(window);

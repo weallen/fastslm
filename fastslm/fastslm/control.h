@@ -51,12 +51,14 @@ public:
 		: M_(512), N_(512), Z_(10), Zres_(1)
 		, offsetX_(0), offsetY_(0), current_mask_(NULL)
 		, compute_gs_(false), cells_loaded_(false), apply_shift_(false)
+		, ext_phase_loaded_(false)
 		, z_fudge_factor_(4.0) {}
 
 	SLMControl(int M, int N, int Z, double Zres) 
 		: M_(M), N_(N), Z_(Z), Zres_(Zres)
 		, offsetX_(0), offsetY_(0), current_mask_(NULL)
 		, compute_gs_(false), cells_loaded_(false), apply_shift_(false)
+		, ext_phase_loaded_(false)
 		, z_fudge_factor_(4.0) {}
 
 	virtual ~SLMControl() { if (current_mask_ != NULL) delete[] current_mask_; }
@@ -124,6 +126,9 @@ private:
 	// Command: SPIRAL_STOP
 	void SpiralStop(const std::vector<std::string>& toks);
 
+	// Command: LOAD_PHASE PATH
+	void LoadPhase(const std::vector<std::string>& toks);
+
 private:
 	typedef void (SLMControl::*CallbackFnPtr)(const std::vector<std::string>&);
 
@@ -154,6 +159,7 @@ private:
 	array retrieved_phase_; // phasemask after computing GS
 	array shifted_phase_; // phasemask after applying motion correction
 	array target_z_; // ???
+	array external_phasemask_; // additional phasemask loaded from the file system
 
 	// variables set externally
 	int* lut_;
@@ -166,7 +172,8 @@ private:
 	bool compute_gs_;
 	bool cells_loaded_; 
 	bool apply_shift_;
-	
+	bool ext_phase_loaded_;
+
 	// calbiration stuff
 	Calibration calib_;
 	float z_fudge_factor_;
